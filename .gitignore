@@ -1,0 +1,10 @@
+node_modules
+.next
+.env.local
+.DS_Store
+*.tsbuildinfo
+
+# Local tooling — installed skills and Claude Code preview config, not app source
+.claude
+.agents
+supabase/.claude

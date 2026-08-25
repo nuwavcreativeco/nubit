@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #16140f;
+  --canvas-raised: #1f1c15;
+  --ink: #f3ede1;
+  --ink-dim: #b8b0a0;
+  --brass: #c9962b;
+  --brass-dim: #8a6a26;
+  --teal: #3e8e82;
+  --line: #35311f;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-raised: var(--canvas-raised);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-brass: var(--brass);
+  --color-brass-dim: var(--brass-dim);
+  --color-teal: var(--teal);
+  --color-line: var(--line);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
+}
