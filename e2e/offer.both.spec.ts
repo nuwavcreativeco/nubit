@@ -23,14 +23,20 @@ test("a cold message lands in requests, and a followed one in primary", async ({
   const shooterPage = await shooterCtx.newPage();
 
   try {
-    // Make sure they are strangers for this one.
-    await creatorPage.goto(`/u/${shooter.handle}`);
-    const following = creatorPage.getByRole("button", { name: "Following" });
-    if (await following.isVisible().catch(() => false)) {
-      await following.click();
-      await expect(
-        creatorPage.getByRole("button", { name: "Follow", exact: true })
-      ).toBeVisible();
+    // Strangers means neither direction: my_inbox treats a follow either way
+    // as primary, and an earlier run leaves the shooter following the creator.
+    for (const [page, handle] of [
+      [creatorPage, shooter.handle],
+      [shooterPage, creator.handle],
+    ] as const) {
+      await page.goto(`/u/${handle}`);
+      const following = page.getByRole("button", { name: "Following" });
+      if (await following.isVisible().catch(() => false)) {
+        await following.click();
+        await expect(
+          page.getByRole("button", { name: "Follow", exact: true })
+        ).toBeVisible();
+      }
     }
 
     // The creator writes to the shooter, who does not follow back.
@@ -88,45 +94,39 @@ test("an accepted direct offer books a real, reviewable day", async ({ browser }
     await shooterPage.locator('input[name="price"]').fill("1200");
     await shooterPage.getByRole("button", { name: "Send offer" }).click();
 
-    await expect(shooterPage.getByText(title)).toBeVisible({ timeout: 20_000 });
-    await expect(shooterPage.getByText("pending")).toBeVisible();
+    const sentCard = shooterPage.getByTestId("offer-card").filter({ hasText: title });
+    await expect(sentCard).toBeVisible({ timeout: 20_000 });
+    await expect(sentCard.getByText("pending")).toBeVisible();
 
-    // The creator sees it and accepts.
-    await creatorPage.goto("/inbox");
-    await creatorPage.getByText(/.+/).first().waitFor();
-    await creatorPage.goto("/inbox?box=requests");
+    // The creator sees it and accepts. Go straight to the thread rather than
+    // guessing which inbox row it is — the offer lands in primary or requests
+    // depending on who follows whom, and both boxes may hold other threads
+    // from earlier runs.
+    const conversationUrl = new URL(shooterPage.url()).pathname;
+    await creatorPage.goto(conversationUrl);
 
-    // The offer may be in either box depending on who follows whom; find the
-    // thread that carries it.
-    for (const box of ["/inbox", "/inbox?box=requests"]) {
-      await creatorPage.goto(box);
-      const thread = creatorPage.locator("main ul li a").first();
-      if (await thread.isVisible().catch(() => false)) {
-        await thread.click();
-        if (await creatorPage.getByText(title).isVisible().catch(() => false)) break;
-      }
-    }
+    const card = creatorPage.getByTestId("offer-card").filter({ hasText: title });
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    await expect(card.getByText("$1,200")).toBeVisible();
 
-    await expect(creatorPage.getByText(title)).toBeVisible({ timeout: 20_000 });
-    await expect(creatorPage.getByText("$1,200")).toBeVisible();
-
-    await creatorPage.getByRole("button", { name: /Accept and book/i }).click();
+    await card.getByRole("button", { name: /Accept and book/i }).click();
 
     // Accepting writes a settled slot, which is what keeps the deal on the
     // ledger — and therefore reviewable and countable.
-    await expect(creatorPage.getByText("accepted")).toBeVisible({ timeout: 30_000 });
-    await expect(
-      creatorPage.getByRole("link", { name: /Booked — see the day/i })
-    ).toBeVisible();
+    await expect(card.getByText("accepted")).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByRole("link", { name: /Booked — see the day/i })).toBeVisible();
 
-    await creatorPage.getByRole("link", { name: /Booked — see the day/i }).click();
+    await card.getByRole("link", { name: /Booked — see the day/i }).click();
     await expect(creatorPage).toHaveURL(/\/slots\/[0-9a-f-]{36}/);
     await expect(creatorPage.getByText(/^won$/i)).toBeVisible();
 
     // The same offer cannot be taken twice.
     await creatorPage.goBack();
     await expect(
-      creatorPage.getByRole("button", { name: /Accept and book/i })
+      creatorPage
+        .getByTestId("offer-card")
+        .filter({ hasText: title })
+        .getByRole("button", { name: /Accept and book/i })
     ).toBeHidden();
   } finally {
     await shooterCtx.close();

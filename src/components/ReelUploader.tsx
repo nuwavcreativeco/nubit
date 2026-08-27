@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createReel, type Aspect } from "@/app/u/actions";
+import { createReel } from "@/app/u/actions";
+import type { Aspect } from "@/lib/types";
 import { humanSize, uploadWithProgress } from "@/lib/upload";
 
 const MAX_BYTES = 500 * 1024 * 1024; // matches the bucket's file_size_limit

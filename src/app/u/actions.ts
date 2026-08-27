@@ -2,11 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { ASPECTS, type Aspect } from "@/lib/types";
 
 type Result = { error: string } | { ok: true };
-
-export const ASPECTS = ["16:9", "9:16"] as const;
-export type Aspect = (typeof ASPECTS)[number];
 
 async function requireUser() {
   const supabase = await createClient();

@@ -105,3 +105,12 @@ export function formatCountdown(msLeft: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m ${seconds}s`;
 }
+
+/**
+ * The two shapes the board filters by. This lives here rather than beside the
+ * server actions because a "use server" file may only export async functions —
+ * exporting a const from one throws the moment an action is invoked, which
+ * typechecks and builds clean and then breaks every upload.
+ */
+export const ASPECTS = ["16:9", "9:16"] as const;
+export type Aspect = (typeof ASPECTS)[number];

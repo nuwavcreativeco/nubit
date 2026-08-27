@@ -88,7 +88,7 @@ function OfferCard({
   }
 
   return (
-    <div className="my-4 border border-line bg-rack">
+    <div data-testid="offer-card" className="my-4 border border-line bg-rack">
       <div className="flex items-center justify-between border-b border-line px-4 py-2">
         <span className="label">
           {offer.mine ? "Offer you sent" : "Direct offer"}

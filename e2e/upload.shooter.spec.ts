@@ -1,6 +1,22 @@
+import { closeSync, openSync, rmSync, ftruncateSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { test, expect } from "@playwright/test";
 import { account } from "./accounts";
 import { recordClip } from "./video";
+
+/**
+ * Playwright refuses in-memory buffers over 50MB, so an oversized file has to
+ * exist on disk. ftruncate makes it sparse: the filesystem reports 501MB while
+ * almost nothing is actually written, and the browser still sees the size.
+ */
+function sparseFile(bytes: number): string {
+  const path = join(tmpdir(), `nubid-oversize-${Date.now()}.mp4`);
+  const fd = openSync(path, "w");
+  ftruncateSync(fd, bytes);
+  closeSync(fd);
+  return path;
+}
 
 /**
  * The uploader is the riskiest untested code in the app and the first thing
@@ -19,7 +35,7 @@ test.describe("uploading work", () => {
     const clip = await recordClip(page, { portrait: true });
 
     await page.getByPlaceholder("Caption (optional)").fill("e2e vertical");
-    await page.locator('input[type="file"]').setInputFiles(clip);
+    await page.locator('input[accept*="video"]').setInputFiles(clip);
 
     // The grid grows by one, and the new tile carries the shape the probe
     // read off the pixels — not the 16:9 default.
@@ -34,7 +50,7 @@ test.describe("uploading work", () => {
     await page.goto(`/u/${shooter.handle}`);
 
     const clip = await recordClip(page, { ms: 4000 });
-    await page.locator('input[type="file"]').setInputFiles(clip);
+    await page.locator('input[accept*="video"]').setInputFiles(clip);
 
     // The percentage and the cancel control only exist while uploading.
     // On a fast local connection this can be brief, so accept either seeing
@@ -62,7 +78,7 @@ test.describe("uploading work", () => {
 
     // Bytes that are not a video at all stand in for the camera codecs
     // (ProRes, some HEVC builds) a browser refuses to decode.
-    await page.locator('input[type="file"]').setInputFiles({
+    await page.locator('input[accept*="video"]').setInputFiles({
       name: "camera-original.mov",
       mimeType: "video/quicktime",
       buffer: Buffer.from("not really a video, but the file is fine"),
@@ -83,14 +99,15 @@ test.describe("uploading work", () => {
     const shooter = account("shooter");
     await page.goto(`/u/${shooter.handle}`);
 
-    // 501MB of zeros, never sent anywhere — the guard is client-side.
-    await page.locator('input[type="file"]').setInputFiles({
-      name: "too-big.mp4",
-      mimeType: "video/mp4",
-      buffer: Buffer.alloc(501 * 1024 * 1024),
-    });
+    // 501MB, never sent anywhere — the guard is client-side.
+    const path = sparseFile(501 * 1024 * 1024);
+    try {
+      await page.locator('input[accept*="video"]').setInputFiles(path);
 
-    await expect(page.getByText(/limit is 500 MB/i)).toBeVisible();
-    await expect(page.getByText(/^\d+%$/)).toBeHidden();
+      await expect(page.getByText(/limit is 500 MB/i)).toBeVisible();
+      await expect(page.getByText(/^\d+%$/)).toBeHidden();
+    } finally {
+      rmSync(path, { force: true });
+    }
   });
 });

@@ -57,27 +57,29 @@ test("following a shooter puts their new day in the bell and the feed", async ({
     const title = `Bell test ${Date.now()}`;
     await postADay(shooterPage, title);
 
-    // 4. It reaches the creator. The bell subscribes to notifications and
-    //    refreshes on insert, so this should land without a manual reload —
-    //    but allow one, because a missed socket is a flake, not a bug.
-    const bell = creator.getByRole("button", { name: /Notifications/ });
-    await expect(bell).toBeVisible();
+    // 4. It reaches the creator, and says the right thing.
+    //
+    //    Asserting on the unread badge alone is not enough: an earlier run can
+    //    leave the badge already lit, so the wait returns instantly and the
+    //    dropdown opens before this run's notification has landed. Poll for
+    //    the actual title instead, which can only be true for this run.
+    await expect(creator.getByRole("button", { name: /Notifications/ })).toBeVisible();
 
-    const badge = creator.locator('button[aria-label*="unread"]');
-    const rang = await badge
-      .waitFor({ state: "visible", timeout: 20_000 })
-      .then(() => true)
-      .catch(() => false);
+    await expect
+      .poll(
+        async () => {
+          await creator.reload();
+          await creator.getByRole("button", { name: /Notifications/ }).click();
+          return creator
+            .getByText(new RegExp(title))
+            .isVisible()
+            .catch(() => false);
+        },
+        { timeout: 30_000, intervals: [500, 1500, 3000, 5000] }
+      )
+      .toBe(true);
 
-    if (!rang) await creator.reload();
-    await expect(creator.locator('button[aria-label*="unread"]')).toBeVisible({
-      timeout: 15_000,
-    });
-
-    // 5. And it says the right thing, pointing at the right day.
-    await creator.getByRole("button", { name: /Notifications/ }).click();
-    await expect(creator.getByText(new RegExp(title))).toBeVisible();
-    await expect(creator.getByText(/you're seeing it first/i)).toBeVisible();
+    await expect(creator.getByText(/you're seeing it first/i).first()).toBeVisible();
   } finally {
     await creatorCtx.close();
     await shooterCtx.close();
