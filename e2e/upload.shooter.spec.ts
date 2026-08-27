@@ -99,12 +99,14 @@ test.describe("uploading work", () => {
     const shooter = account("shooter");
     await page.goto(`/u/${shooter.handle}`);
 
-    // 501MB, never sent anywhere — the guard is client-side.
-    const path = sparseFile(501 * 1024 * 1024);
+    // Just over the plan cap, never sent anywhere — the guard is client-side,
+    // which is the whole point: the server would otherwise 413 only after the
+    // whole file had gone up the wire.
+    const path = sparseFile(51 * 1024 * 1024);
     try {
       await page.locator('input[accept*="video"]').setInputFiles(path);
 
-      await expect(page.getByText(/limit is 500 MB/i)).toBeVisible();
+      await expect(page.getByText(/over the 50 MB limit/i)).toBeVisible();
       await expect(page.getByText(/^\d+%$/)).toBeHidden();
     } finally {
       rmSync(path, { force: true });

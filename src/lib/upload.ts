@@ -79,6 +79,18 @@ export async function uploadWithProgress({
         return;
       }
       // Storage answers with a JSON body; fall back to the status line.
+      // 413 is the plan cap, and Storage's own wording for it explains
+      // nothing, so keep ours rather than letting the body overwrite it.
+      if (xhr.status === 413) {
+        resolve({
+          error:
+            "The server rejected this file as too large. Supabase caps " +
+            "uploads by plan — Free is 50 MB — and that cap overrides the " +
+            "bucket's own limit. Export smaller, or raise the plan.",
+        });
+        return;
+      }
+
       let message = `Upload failed (${xhr.status}).`;
       try {
         const body = JSON.parse(xhr.responseText) as {

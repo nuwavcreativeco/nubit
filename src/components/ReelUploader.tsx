@@ -6,7 +6,17 @@ import { createReel } from "@/app/u/actions";
 import type { Aspect } from "@/lib/types";
 import { humanSize, uploadWithProgress } from "@/lib/upload";
 
-const MAX_BYTES = 500 * 1024 * 1024; // matches the bucket's file_size_limit
+/**
+ * Supabase caps uploads globally by plan, and that global cap overrides any
+ * per-bucket limit. On Free it is 50MB, full stop. The bucket used to say
+ * 500MB, so the app accepted a real reel, spent minutes uploading it, and
+ * Storage rejected it at the end — which reads as "uploads are broken".
+ *
+ * Raise NEXT_PUBLIC_MAX_UPLOAD_MB (and the bucket, and the project's Storage
+ * setting) together after moving to Pro.
+ */
+const MAX_UPLOAD_MB = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB ?? 50);
+const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
 type Probe = {
   ok: boolean;
@@ -123,7 +133,9 @@ export default function ReelUploader({ userId }: { userId: string }) {
 
     if (picked.size > MAX_BYTES) {
       setError(
-        `That file is ${humanSize(picked.size)}. The limit is 500 MB — export it smaller and try again.`
+        `That file is ${humanSize(picked.size)}, over the ${MAX_UPLOAD_MB} MB limit. ` +
+          `Export it as H.264 MP4 at 1080p — a minute of reel usually lands ` +
+          `between 10 and 25 MB.`
       );
       return;
     }
@@ -300,7 +312,7 @@ export default function ReelUploader({ userId }: { userId: string }) {
             ? "Reading the file…"
             : stage === "saving"
               ? "Saving…"
-              : "MP4, MOV or WebM · up to 500MB · shape and length read automatically"}
+              : `MP4, MOV or WebM · up to ${MAX_UPLOAD_MB} MB · shape and length read automatically`}
         </p>
       )}
 
