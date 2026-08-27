@@ -18,6 +18,14 @@ import { humanSize, uploadWithProgress } from "@/lib/upload";
 const MAX_UPLOAD_MB = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB ?? 50);
 const MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
+/** A reel is a minute at most. Longer belongs on the shooter's own site. */
+const MAX_SECONDS = Number(process.env.NEXT_PUBLIC_MAX_REEL_SECONDS ?? 60);
+
+/** The bitrate that would make a clip of this length fit, with headroom. */
+function targetMbps(seconds: number): number {
+  return Math.max(2, ((MAX_BYTES * 0.92) * 8) / seconds / 1_000_000);
+}
+
 type Probe = {
   ok: boolean;
   aspect: Aspect;
@@ -131,16 +139,20 @@ export default function ReelUploader({ userId }: { userId: string }) {
     setError(null);
     setNotice(null);
 
+    setFile(picked);
+
+    // Size is checked before the probe on purpose. A camera original is
+    // usually both too big AND undecodable in a browser, and being told
+    // "we couldn't read this" when the real problem is that it could never
+    // fit sends people off chasing the wrong thing.
     if (picked.size > MAX_BYTES) {
       setError(
         `That file is ${humanSize(picked.size)}, over the ${MAX_UPLOAD_MB} MB limit. ` +
-          `Export it as H.264 MP4 at 1080p — a minute of reel usually lands ` +
-          `between 10 and 25 MB.`
+          `Re-export as H.264 MP4 — about ${targetMbps(MAX_SECONDS).toFixed(0)} Mbps ` +
+          `fits a full ${MAX_SECONDS} seconds.`
       );
       return;
     }
-
-    setFile(picked);
 
     let aspect: Aspect;
     let durationSeconds: number | null = null;
@@ -165,6 +177,15 @@ export default function ReelUploader({ userId }: { userId: string }) {
       aspect = probed.aspect;
       durationSeconds = probed.durationSeconds;
       poster = probed.poster;
+
+      if (durationSeconds !== null && durationSeconds > MAX_SECONDS) {
+        setStage(null);
+        setError(
+          `That clip is ${Math.round(durationSeconds)} seconds. Reels are up to ` +
+            `${MAX_SECONDS} — trim it and re-export.`
+        );
+        return;
+      }
     }
 
     const controller = new AbortController();
@@ -312,7 +333,7 @@ export default function ReelUploader({ userId }: { userId: string }) {
             ? "Reading the file…"
             : stage === "saving"
               ? "Saving…"
-              : `MP4, MOV or WebM · up to ${MAX_UPLOAD_MB} MB · shape and length read automatically`}
+              : `MP4, MOV or WebM · up to ${MAX_SECONDS}s and ${MAX_UPLOAD_MB} MB · H.264 at about ${targetMbps(MAX_SECONDS).toFixed(0)} Mbps fits a full minute`}
         </p>
       )}
 

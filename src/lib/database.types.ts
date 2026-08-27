@@ -16,6 +16,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      reel_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: number
+          reel_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: number
+          reel_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: number
+          reel_id?: string
+        }
+        Relationships: []
+      }
+      reel_likes: {
+        Row: {
+          created_at: string
+          reel_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          reel_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          reel_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           area_label: string | null
@@ -455,6 +497,7 @@ export type Database = {
           ends_at: string
           floor_rate_cents: number
           gear: string[]
+          hidden_from_winner_grid: boolean
           geog_approx: unknown
           id: string
           leader_id: string | null
@@ -493,6 +536,7 @@ export type Database = {
           ends_at?: string
           floor_rate_cents: number
           gear?: string[]
+          hidden_from_winner_grid?: boolean
           geog_approx?: unknown
           id?: string
           leader_id?: string | null
@@ -530,6 +574,7 @@ export type Database = {
           ends_at?: string
           floor_rate_cents?: number
           gear?: string[]
+          hidden_from_winner_grid?: boolean
           geog_approx?: unknown
           id?: string
           leader_id?: string | null
@@ -699,12 +744,16 @@ export type Database = {
         Args: { p_handle: string; p_limit?: number; p_offset?: number }
         Returns: {
           aspect: string
+          booked_slot_id: string
           caption: string
+          comment_count: number
           created_at: string
           credit_handle: string
           credit_name: string
           duration_seconds: number
           id: string
+          like_count: number
+          liked_by_me: boolean
           live_cents: number
           live_closes_at: string
           live_slot_id: string
@@ -712,6 +761,46 @@ export type Database = {
           source: string
           video_url: string
         }[]
+      }
+      reel_detail: {
+        Args: { p_reel: string }
+        Returns: {
+          aspect: string
+          caption: string
+          comment_count: number
+          created_at: string
+          duration_seconds: number
+          id: string
+          is_mine: boolean
+          like_count: number
+          liked_by_me: boolean
+          live_cents: number
+          live_closes_at: string
+          live_slot_id: string
+          owner_avatar_url: string
+          owner_handle: string
+          owner_id: string
+          owner_name: string
+          poster_url: string
+          video_url: string
+        }[]
+      }
+      reel_comments_for: {
+        Args: { p_limit?: number; p_reel: string }
+        Returns: {
+          author_avatar: string
+          author_handle: string
+          author_id: string
+          author_name: string
+          body: string
+          can_delete: boolean
+          created_at: string
+          id: number
+        }[]
+      }
+      hide_booked_tile: {
+        Args: { p_hidden: boolean; p_slot: string }
+        Returns: undefined
       }
       reels_following: {
         Args: { p_limit?: number; p_offset?: number }

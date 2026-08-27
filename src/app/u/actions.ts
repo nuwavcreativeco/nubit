@@ -168,3 +168,106 @@ export async function messageUser(userId: string): Promise<Result & { id?: strin
   revalidatePath("/inbox");
   return { ok: true, id: data as string };
 }
+
+/**
+ * Editing a caption after the fact. The reels update policy already pins this
+ * to the owner, so the filter here is belt and braces rather than the guard.
+ */
+export async function updateCaption(
+  reelId: string,
+  caption: string
+): Promise<Result> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in first." };
+  if (caption.length > 2000) return { error: "That caption is too long." };
+
+  const { error } = await supabase
+    .from("reels")
+    .update({ caption: caption.trim() || null })
+    .eq("id", reelId)
+    .eq("owner_id", user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/r/${reelId}`);
+  return { ok: true };
+}
+
+/** Like is a plain row; the policies pin user_id to the caller. */
+export async function toggleLike(
+  reelId: string,
+  liked: boolean
+): Promise<Result> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in to like work." };
+
+  const { error } = liked
+    ? await supabase.from("reel_likes").insert({ reel_id: reelId, user_id: user.id })
+    : await supabase
+        .from("reel_likes")
+        .delete()
+        .eq("reel_id", reelId)
+        .eq("user_id", user.id);
+
+  // Liking twice is not worth an error message.
+  if (error && error.code !== "23505") return { error: error.message };
+
+  revalidatePath(`/r/${reelId}`);
+  return { ok: true };
+}
+
+export async function addComment(reelId: string, body: string): Promise<Result> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in to comment." };
+
+  const text = body.trim();
+  if (!text) return { error: "Write something first." };
+  if (text.length > 1000) return { error: "That comment is too long." };
+
+  const { error } = await supabase
+    .from("reel_comments")
+    .insert({ reel_id: reelId, author_id: user.id, body: text });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/r/${reelId}`);
+  return { ok: true };
+}
+
+/**
+ * The delete policy allows two people through: the comment's author, and the
+ * owner of the reel it sits under. A shooter's grid is their shopfront.
+ */
+export async function deleteComment(
+  commentId: number,
+  reelId: string
+): Promise<Result> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in first." };
+
+  const { error } = await supabase.from("reel_comments").delete().eq("id", commentId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/r/${reelId}`);
+  return { ok: true };
+}
+
+/**
+ * A creator taking a delivered tile off their own grid. The reel still
+ * belongs to the shooter and stays on theirs.
+ */
+export async function hideBookedTile(
+  slotId: string,
+  hidden: boolean,
+  handle: string
+): Promise<Result> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in first." };
+
+  const { error } = await supabase.rpc("hide_booked_tile", {
+    p_slot: slotId,
+    p_hidden: hidden,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/u/${handle}`);
+  return { ok: true };
+}

@@ -6,6 +6,7 @@ import AvatarUploader from "@/components/AvatarUploader";
 import ReelUploader from "@/components/ReelUploader";
 import FollowButton from "@/components/FollowButton";
 import MessageButton from "@/components/MessageButton";
+import EditProfile from "@/components/EditProfile";
 import ProfileGrid, { type GridTile } from "@/components/ProfileGrid";
 
 export default async function ProfilePage({
@@ -57,6 +58,10 @@ export default async function ProfilePage({
     source: row.source,
     creditName: row.credit_name,
     creditHandle: row.credit_handle,
+    bookedSlotId: row.booked_slot_id,
+    likeCount: row.like_count,
+    commentCount: row.comment_count,
+    likedByMe: row.liked_by_me,
     liveSlotId: row.live_slot_id,
     liveCents: row.live_cents,
   }));
@@ -124,12 +129,22 @@ export default async function ProfilePage({
       </header>
 
       {isOwner && (
-        <div className="mt-10">
+        <div className="mt-8 space-y-4">
+          <EditProfile
+            displayName={profile.display_name}
+            bio={profile.bio}
+            city={profile.city}
+          />
           <ReelUploader userId={profile.id} />
         </div>
       )}
 
-      <ProfileGrid tiles={tiles} handle={profile.handle} isOwner={isOwner} />
+      <ProfileGrid
+        tiles={tiles}
+        handle={profile.handle}
+        isOwner={isOwner}
+        signedIn={Boolean(user)}
+      />
     </main>
   );
 }
