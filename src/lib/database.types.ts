@@ -16,6 +16,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      offers: {
+        Row: {
+          area_label: string | null
+          conversation_id: string | null
+          created_at: string
+          decided_at: string | null
+          ends_at: string
+          expires_at: string
+          from_id: string
+          id: string
+          location: string
+          note: string | null
+          price_cents: number
+          reel_id: string | null
+          shoot_date: string
+          slot_id: string | null
+          starts_at: string
+          status: string
+          title: string
+          to_id: string
+        }
+        Insert: {
+          area_label?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          ends_at?: string
+          expires_at: string
+          from_id: string
+          id?: string
+          location: string
+          note?: string | null
+          price_cents: number
+          reel_id?: string | null
+          shoot_date: string
+          slot_id?: string | null
+          starts_at?: string
+          status?: string
+          title: string
+          to_id: string
+        }
+        Update: {
+          area_label?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          ends_at?: string
+          expires_at?: string
+          from_id?: string
+          id?: string
+          location?: string
+          note?: string | null
+          price_cents?: number
+          reel_id?: string | null
+          shoot_date?: string
+          slot_id?: string | null
+          starts_at?: string
+          status?: string
+          title?: string
+          to_id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -385,6 +448,8 @@ export type Database = {
           closes_at: string
           created_at: string
           current_cents: number | null
+          delivered_at: string | null
+          delivered_reel_id: string | null
           delivers: string[]
           description: string | null
           ends_at: string
@@ -401,6 +466,7 @@ export type Database = {
           settled_at: string | null
           settled_cents: number | null
           shoot_date: string
+          source: string
           starts_at: string
           status: string
           step_cents: number
@@ -420,6 +486,8 @@ export type Database = {
           closes_at: string
           created_at?: string
           current_cents?: number | null
+          delivered_at?: string | null
+          delivered_reel_id?: string | null
           delivers?: string[]
           description?: string | null
           ends_at?: string
@@ -455,6 +523,8 @@ export type Database = {
           closes_at?: string
           created_at?: string
           current_cents?: number | null
+          delivered_at?: string | null
+          delivered_reel_id?: string | null
           delivers?: string[]
           description?: string | null
           ends_at?: string
@@ -471,6 +541,7 @@ export type Database = {
           settled_at?: string | null
           settled_cents?: number | null
           shoot_date?: string
+          source?: string
           starts_at?: string
           status?: string
           step_cents?: number
@@ -533,6 +604,57 @@ export type Database = {
       }
     }
     Functions: {
+      deliver_reel: {
+        Args: { p_reel: string; p_slot: string }
+        Returns: Json
+      }
+      my_offers: {
+        Args: { p_box?: string }
+        Returns: {
+          area_label: string
+          conversation_id: string
+          created_at: string
+          decided_at: string
+          ends_at: string
+          expires_at: string
+          id: string
+          location: string
+          note: string
+          other_avatar_url: string
+          other_handle: string
+          other_id: string
+          other_name: string
+          price_cents: number
+          reel_id: string
+          reel_poster_url: string
+          shoot_date: string
+          slot_id: string
+          starts_at: string
+          status: string
+          title: string
+        }[]
+      }
+      respond_to_offer: {
+        Args: { p_accept: boolean; p_offer: string }
+        Returns: Json
+      }
+      send_offer: {
+        Args: {
+          p_area_label?: string
+          p_ends_at?: string
+          p_expires_at: string
+          p_location: string
+          p_note?: string
+          p_price_cents: number
+          p_reel?: string
+          p_shoot_date: string
+          p_starts_at?: string
+          p_title: string
+          p_to: string
+        }
+        Returns: string
+      }
+      withdraw_offer: { Args: { p_offer: string }; Returns: undefined }
       is_conversation_participant: {
         Args: { p_conv: string }
         Returns: boolean
