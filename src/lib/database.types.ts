@@ -16,6 +16,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          slot_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          slot_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          slot_id?: string | null
+        }
+        Relationships: []
+      }
+      follows: {
+        Row: {
+          created_at: string
+          followee_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          followee_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          followee_id?: string
+          follower_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: number
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: number
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: number
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      reels: {
+        Row: {
+          aspect: string
+          caption: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          owner_id: string
+          poster_url: string | null
+          video_url: string
+        }
+        Insert: {
+          aspect?: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          owner_id: string
+          poster_url?: string | null
+          video_url: string
+        }
+        Update: {
+          aspect?: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          owner_id?: string
+          poster_url?: string | null
+          video_url?: string
+        }
+        Relationships: []
+      }
       bids: {
         Row: {
           bidder_id: string
@@ -148,6 +262,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           bio: string | null
           city: string | null
           created_at: string
@@ -160,6 +275,7 @@ export type Database = {
           search_radius_mi: number
         }
         Insert: {
+          avatar_url?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
@@ -172,6 +288,7 @@ export type Database = {
           search_radius_mi?: number
         }
         Update: {
+          avatar_url?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
@@ -279,6 +396,7 @@ export type Database = {
           location: string
           poster_url: string | null
           radius_mi: number
+          reel_id: string | null
           reel_url: string | null
           settled_at: string | null
           settled_cents: number | null
@@ -313,6 +431,7 @@ export type Database = {
           location: string
           poster_url?: string | null
           radius_mi?: number
+          reel_id?: string | null
           reel_url?: string | null
           settled_at?: string | null
           settled_cents?: number | null
@@ -347,6 +466,7 @@ export type Database = {
           location?: string
           poster_url?: string | null
           radius_mi?: number
+          reel_id?: string | null
           reel_url?: string | null
           settled_at?: string | null
           settled_cents?: number | null
@@ -377,6 +497,24 @@ export type Database = {
       }
     }
     Views: {
+      follow_counts: {
+        Row: {
+          followers: number | null
+          following: number | null
+          id: string | null
+        }
+        Insert: {
+          followers?: never
+          following?: never
+          id?: string | null
+        }
+        Update: {
+          followers?: never
+          following?: never
+          id?: string | null
+        }
+        Relationships: []
+      }
       videographer_stats: {
         Row: {
           bookings_won: number | null
@@ -395,6 +533,109 @@ export type Database = {
       }
     }
     Functions: {
+      is_conversation_participant: {
+        Args: { p_conv: string }
+        Returns: boolean
+      }
+      is_following: { Args: { p_user: string }; Returns: boolean }
+      mark_conversation_read: { Args: { p_conv: string }; Returns: undefined }
+      my_badges: {
+        Args: never
+        Returns: {
+          bell_unread: number
+          primary_unread: number
+          request_unread: number
+        }[]
+      }
+      my_inbox: {
+        Args: { p_folder?: string }
+        Returns: {
+          conversation_id: string
+          is_primary: boolean
+          last_message_at: string
+          other_avatar_url: string
+          other_handle: string
+          other_id: string
+          other_name: string
+          preview: string
+          unread: number
+        }[]
+      }
+      my_reels: {
+        Args: never
+        Returns: {
+          aspect: string
+          caption: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          poster_url: string
+          video_url: string
+        }[]
+      }
+      profile_grid: {
+        Args: { p_handle: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          aspect: string
+          caption: string
+          created_at: string
+          credit_handle: string
+          credit_name: string
+          duration_seconds: number
+          id: string
+          live_cents: number
+          live_closes_at: string
+          live_slot_id: string
+          poster_url: string
+          source: string
+          video_url: string
+        }[]
+      }
+      reels_following: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          aspect: string
+          caption: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          live_cents: number
+          live_closes_at: string
+          live_slot_id: string
+          owner_avatar_url: string
+          owner_handle: string
+          owner_id: string
+          owner_name: string
+          poster_url: string
+          video_url: string
+        }[]
+      }
+      slots_following: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          area_label: string
+          aspect: string
+          avatar_url: string
+          bid_count: number
+          claim_cents: number
+          closes_at: string
+          current_cents: number
+          floor_rate_cents: number
+          handle: string
+          id: string
+          location: string
+          poster_url: string
+          reel_url: string
+          shoot_date: string
+          title: string
+          videographer_id: string
+          videographer_name: string
+        }[]
+      }
+      start_conversation: {
+        Args: { p_slot?: string; p_user: string }
+        Returns: string
+      }
       cancel_slot: {
         Args: { p_reason?: string; p_slot: string }
         Returns: Json
