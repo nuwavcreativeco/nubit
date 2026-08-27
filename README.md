@@ -104,6 +104,33 @@ the relationship named explicitly — `slots!bids_slot_id_fkey(*)`, as used in
 5. **Deploy** — pushing to `main` deploys to Vercel. The same two
    environment variables need to be set in the Vercel project settings.
 
+## Testing
+
+`supabase/tests/suite.sql` is the database test suite — 20 assertions over the
+parts that decide money and privacy. It runs inside a single transaction and
+deliberately aborts at the end, so it can be run against the live project
+without leaving a row behind. A summary reading `0 failed` is a pass.
+
+```bash
+psql "$DATABASE_URL" -f supabase/tests/suite.sql
+```
+
+Two things make it a real test rather than a smoke check. It switches to the
+`authenticated` role before every visibility assertion — running as the owner
+would bypass RLS and every isolation test would pass for the wrong reason. And
+it asserts on refusals too: a bid that should be rejected only counts if it
+actually raises.
+
+It covers proxy-bid pricing, step alignment, the price-walks-backwards
+regression, self-bidding, the anti-snipe extension, bid isolation between
+rivals, masked bid history, follower bell fan-out, the primary/requests inbox
+split, third-party message isolation, offer accept/double-accept/isolation,
+delivery crediting the right grid, and settlement.
+
+What it does not cover: anything in a browser. Reel upload, the realtime bell,
+and the offer UI need a signed-in session and a real file — see the launch
+notes below.
+
 ## Next build steps
 
 The phone design system in `Nubid bidding platform.zip` (tokens, six screens,
