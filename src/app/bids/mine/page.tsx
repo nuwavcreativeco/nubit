@@ -12,7 +12,7 @@ export default async function MyBidsPage() {
   if (!user) {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-start justify-center px-6 py-24">
-        <h1 className="font-display text-2xl">Sign in to see your bids</h1>
+        <h1 className="text-2xl tracking-tight">Sign in to see your bids</h1>
         <p className="mt-3 text-crew">
           <Link href="/auth/sign-in" className="text-signal underline">
             Sign in
@@ -64,7 +64,7 @@ export default async function MyBidsPage() {
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
-      <h1 className="font-display text-3xl">My bids</h1>
+      <h1 className="text-3xl tracking-tight">My bids</h1>
       <MyBidsLive userId={user.id} initialEntries={entries} />
     </main>
   );

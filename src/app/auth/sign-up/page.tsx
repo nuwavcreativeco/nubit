@@ -21,7 +21,7 @@ export default function SignUpPage() {
 
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-6 py-16">
-      <h1 className="font-display text-3xl">Create an account</h1>
+      <h1 className="text-3xl tracking-tight">Create an account</h1>
       <p className="mt-2 text-crew">
         Already have one?{" "}
         <Link href="/auth/sign-in" className="text-signal underline">

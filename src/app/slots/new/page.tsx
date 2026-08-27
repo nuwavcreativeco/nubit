@@ -87,7 +87,7 @@ export default function NewSlotPage() {
 
   return (
     <main className="mx-auto w-full max-w-lg flex-1 px-6 py-16">
-      <h1 className="font-display text-3xl">Post a slot</h1>
+      <h1 className="text-3xl tracking-tight">Post a slot</h1>
       <p className="mt-2 text-crew">
         Set the floor and the claim price. Bidders move it up in steps until
         the clock runs out.

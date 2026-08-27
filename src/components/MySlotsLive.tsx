@@ -100,13 +100,13 @@ export default function MySlotsLive({
             className="flex items-center justify-between gap-4 py-5 transition hover:opacity-80"
           >
             <div>
-              <p className="font-display text-lg">{slot.title}</p>
+              <p className="text-lg font-medium">{slot.title}</p>
               <p className="mt-1 text-sm text-crew">
                 {formatShootDate(slot.shootDate)} &middot; {slot.location} &middot;{" "}
                 {slot.bidCount} {slot.bidCount === 1 ? "bid" : "bids"}
               </p>
               {slot.status === "open" && (
-                <p className="mt-1 text-xs uppercase tracking-widest text-crew">
+                <p className="meta">
                   <Countdown closesAt={slot.closesAt} className="tabular-nums" />
                 </p>
               )}
@@ -124,10 +124,10 @@ export default function MySlotsLive({
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="font-display text-xl tabular-nums text-signal">
+              <p className="fig text-xl text-signal">
                 {formatCents(slot.currentCents ?? slot.floorRateCents)}
               </p>
-              <p className="text-xs uppercase tracking-widest text-crew">
+              <p className="meta">
                 {slot.status}
               </p>
             </div>

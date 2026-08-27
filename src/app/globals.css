@@ -56,63 +56,71 @@ h3,
  *   .label — the 10px Inter caps that title a number ("HIGH BID", "LEFT")
  *   .meta  — the 11px mono caps that carry place and date
  *   .fig   — Space Grotesk numerals, tight, for money and clocks
+ *
+ * These live in @layer components on purpose. Without the layer they are
+ * plain classes that come after Tailwind's utilities in source order, so
+ * `.meta` silently beat every `text-*` beside it — REC rendered crew grey
+ * instead of red. In the components layer, utilities always win.
  */
-.label {
-  font-family: var(--font-body), sans-serif;
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: hsl(var(--crew));
-}
+@layer components {
+  .label {
+    font-family: var(--font-body), sans-serif;
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: hsl(var(--crew));
+  }
 
-.meta {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  line-height: 1.45;
-  font-weight: 400;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-  color: hsl(var(--crew));
-}
+  .meta {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    font-weight: 400;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    color: hsl(var(--crew));
+  }
 
-.fig {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
+  .fig {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
 
-/* The cyan is bright enough that white on it fails contrast — the site's own
-   --accent-foreground is the black ground, so primary buttons take that. */
-.btn-signal {
-  background: hsl(var(--signal));
-  color: hsl(var(--stage));
-  font-weight: 500;
-  transition: background-color 150ms ease;
-}
-.btn-signal:hover {
-  background: hsl(var(--signal-dim));
-}
+  /* The cyan is bright enough that white on it fails contrast — the site's
+     own --accent-foreground is the black ground, so primary buttons take
+     that. */
+  .btn-signal {
+    background: hsl(var(--signal));
+    color: hsl(var(--stage));
+    font-weight: 500;
+    transition: background-color 150ms ease;
+  }
+  .btn-signal:hover {
+    background: hsl(var(--signal-dim));
+  }
 
-.btn-ghost {
-  border: 1px solid hsl(var(--line));
-  color: hsl(var(--key));
-  font-weight: 500;
-  transition:
-    border-color 150ms ease,
-    color 150ms ease;
-}
-.btn-ghost:hover {
-  border-color: hsl(var(--crew));
-}
+  .btn-ghost {
+    border: 1px solid hsl(var(--line));
+    color: hsl(var(--key));
+    font-weight: 500;
+    transition:
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+  .btn-ghost:hover {
+    border-color: hsl(var(--crew));
+  }
 
-/* The live dot next to the wordmark and the SEATTLE eyebrow. */
-.pip {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: hsl(var(--signal));
+  /* The live dot next to the wordmark and the SEATTLE eyebrow. */
+  .pip {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: hsl(var(--signal));
+  }
 }

@@ -12,7 +12,7 @@ export default async function MySlotsPage() {
   if (!user) {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-start justify-center px-6 py-24">
-        <h1 className="font-display text-2xl">Sign in to see your slots</h1>
+        <h1 className="text-2xl tracking-tight">Sign in to see your slots</h1>
         <p className="mt-3 text-crew">
           <Link href="/auth/sign-in" className="text-signal underline">
             Sign in
@@ -42,7 +42,7 @@ export default async function MySlotsPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl">My slots</h1>
+        <h1 className="text-3xl tracking-tight">My slots</h1>
         <Link
           href="/slots/new"
           className="bg-signal px-4 py-2 text-sm font-medium text-stage transition hover:bg-signal-dim"

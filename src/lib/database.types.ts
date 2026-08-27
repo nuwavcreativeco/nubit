@@ -732,6 +732,31 @@ export type Database = {
           video_url: string
         }[]
       }
+      slots_board: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          area_label: string
+          aspect: string
+          avatar_url: string
+          bid_count: number
+          claim_cents: number
+          closes_at: string
+          current_cents: number
+          distance_mi: number
+          duration_seconds: number
+          floor_rate_cents: number
+          handle: string
+          id: string
+          location: string
+          poster_url: string
+          rating: number
+          shoot_date: string
+          title: string
+          video_url: string
+          videographer_id: string
+          videographer_name: string
+        }[]
+      }
       slots_following: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
@@ -812,18 +837,25 @@ export type Database = {
         }
         Returns: {
           area_label: string
+          aspect: string
+          avatar_url: string
           bid_count: number
           claim_cents: number
           closes_at: string
           current_cents: number
           distance_mi: number
+          duration_seconds: number
           floor_rate_cents: number
+          handle: string
           id: string
           location: string
           poster_url: string
-          reel_url: string
+          rating: number
           shoot_date: string
           title: string
+          video_url: string
+          videographer_id: string
+          videographer_name: string
         }[]
       }
     }

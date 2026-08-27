@@ -21,14 +21,14 @@ export default function BidTicker() {
 
   return (
     <div className="w-full max-w-sm border border-line bg-rack p-6 shadow-2xl shadow-black/40">
-      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-crew">
+      <div className="flex items-center justify-between meta">
         <span>Half-day shoot &middot; Studio</span>
         <span className="text-signal">open</span>
       </div>
 
       <div className="mt-6 flex items-baseline gap-3">
         <span
-          className={`font-display text-5xl tabular-nums transition-colors duration-500 ${
+          className={`fig text-5xl transition-colors duration-500 ${
             isFloor ? "text-signal" : "text-signal"
           }`}
         >

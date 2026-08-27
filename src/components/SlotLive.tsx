@@ -143,23 +143,22 @@ export default function SlotLive({
   return (
     <>
       <div className="mt-4 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">{title}</h1>
-          <p className="mt-2 text-crew">
-            {videographerName}
+        <div className="min-w-0">
+          <h1 className="text-3xl tracking-tight">{title}</h1>
+          <p className="mt-2 flex items-baseline gap-2">
+            <span className="text-sm font-medium text-key">{videographerName}</span>
             {rating !== null && (
-              <>
-                {" "}
-                &middot; {rating} ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
-              </>
+              <span className="text-xs text-crew">
+                ★ {rating} ({reviewCount})
+              </span>
             )}
           </p>
-          <p className="mt-1 text-sm text-crew">
-            {formatShootDate(shootDate)} &middot; {formatShootWindow(startsAt, endsAt)}{" "}
-            &middot; {location}
+          <p className="meta mt-1">
+            {location} &middot; {formatShootDate(shootDate)} &middot;{" "}
+            {formatShootWindow(startsAt, endsAt)}
           </p>
         </div>
-        <span className="border border-line px-3 py-1 text-xs uppercase tracking-widest text-crew">
+        <span className="meta shrink-0 border border-line px-3 py-1">
           {state.status}
         </span>
       </div>
@@ -169,33 +168,41 @@ export default function SlotLive({
       {(delivers.length > 0 || gear.length > 0) && (
         <div className="mt-6 flex flex-wrap gap-2">
           {[...delivers, ...gear].map((item) => (
-            <span
-              key={item}
-              className="border border-line px-3 py-1 text-xs uppercase tracking-widest text-crew"
-            >
+            <span key={item} className="meta border border-line px-3 py-1">
               {item}
             </span>
           ))}
         </div>
       )}
 
+      {/* The two figures, paired with their labels, as on the board card. */}
       <div className="mt-8 border border-line bg-rack p-6">
-        {isOpen && (
-          <div className="flex items-center justify-between text-xs uppercase tracking-widest text-crew">
-            <span>Bidding closes</span>
-            <Countdown closesAt={state.closesAt} className="tabular-nums text-key" />
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex flex-col">
+            <span className="label">
+              {state.bidCount > 0 ? "High bid" : "Floor"}
+            </span>
+            <span className="fig mt-1 text-4xl text-signal">
+              {formatCents(state.settledCents ?? priceCents)}
+            </span>
           </div>
-        )}
 
-        <p className="mt-4 text-xs uppercase tracking-widest text-crew">
-          {state.bidCount > 0 ? "Current bid" : "Floor day rate"}
-        </p>
-        <p className="mt-2 font-display text-5xl tabular-nums text-signal">
-          {formatCents(state.settledCents ?? priceCents)}
-        </p>
-        <p className="mt-2 text-sm text-crew">
-          Floor {formatCents(floorRateCents)} &middot; step {formatCents(stepCents)}{" "}
-          &middot; {state.bidCount} {state.bidCount === 1 ? "bid" : "bids"}
+          {isOpen && (
+            <div className="flex flex-col items-end">
+              <span className="label">Left</span>
+              <Countdown
+                closesAt={state.closesAt}
+                className="fig mt-1 text-4xl"
+                closedLabel="closed"
+              />
+            </div>
+          )}
+        </div>
+
+        <p className="meta mt-4">
+          {state.bidCount} {state.bidCount === 1 ? "bid" : "bids"} &middot; floor{" "}
+          {formatCents(floorRateCents)} &middot; step {formatCents(stepCents)}{" "}
+          &middot; claim {formatCents(claimCents)}
         </p>
 
         {isOpen && youLead && (
@@ -228,7 +235,7 @@ export default function SlotLive({
 
       {canBid && (
         <div className="mt-8">
-          <h2 className="font-display text-xl">Place a bid</h2>
+          <h2 className="text-xl tracking-tight">Place a bid</h2>
           <div className="mt-4">
             <BidForm
               slotId={slotId}
@@ -263,7 +270,7 @@ export default function SlotLive({
       )}
 
       <div className="mt-10">
-        <h2 className="font-display text-xl">Bid history</h2>
+        <h2 className="text-xl tracking-tight">Bid history</h2>
 
         {history.length === 0 ? (
           <p className="mt-3 text-crew">No bids yet.</p>
@@ -277,8 +284,7 @@ export default function SlotLive({
                 <p className={entry.isYou ? "text-signal" : "text-key"}>
                   {entry.isYou ? "You" : entry.bidder}
                 </p>
-                <p className="text-xs text-crew">
-                  {new Date(entry.bidAt).toLocaleString("en-US", {
+                <p className="meta">                  {new Date(entry.bidAt).toLocaleString("en-US", {
                     month: "short",
                     day: "numeric",
                     hour: "numeric",
@@ -289,7 +295,7 @@ export default function SlotLive({
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs text-crew">
+        <p className="meta mt-3">
           Names stay masked and amounts stay private until bidding closes —
           only the price on the board is public.
         </p>

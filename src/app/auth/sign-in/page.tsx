@@ -18,7 +18,7 @@ export default function SignInPage() {
 
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-6 py-16">
-      <h1 className="font-display text-3xl">Sign in</h1>
+      <h1 className="text-3xl tracking-tight">Sign in</h1>
       <p className="mt-2 text-crew">
         New here?{" "}
         <Link href="/auth/sign-up" className="text-signal underline">

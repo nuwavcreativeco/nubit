@@ -118,13 +118,13 @@ export default function MyBidsLive({
               className="flex items-center justify-between gap-4 py-5 transition hover:opacity-80"
             >
               <div>
-                <p className="font-display text-lg">{entry.slotTitle}</p>
+                <p className="text-lg font-medium">{entry.slotTitle}</p>
                 <p className="mt-1 text-sm text-crew">
                   At {formatCents(entry.currentCents ?? entry.floorRateCents)}{" "}
                   &middot; your max {formatCents(entry.yourMaxCents)}
                 </p>
                 {entry.slotStatus === "open" && (
-                  <p className="mt-1 text-xs uppercase tracking-widest text-crew">
+                  <p className="meta">
                     <Countdown closesAt={entry.closesAt} className="tabular-nums" />
                   </p>
                 )}

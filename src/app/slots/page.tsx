@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { SearchArea } from "@/lib/geo";
 import SlotFeed, { type FeedItem } from "@/components/SlotFeed";
+import { toBoardSlot } from "@/components/SlotCard";
 
 function isSupabaseConfigured() {
   return Boolean(
@@ -14,7 +15,7 @@ export default async function SlotsPage() {
   if (!isSupabaseConfigured()) {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-start justify-center px-6 py-24">
-        <h1 className="font-display text-2xl">Supabase isn&apos;t connected yet</h1>
+        <h1 className="text-2xl tracking-tight">Supabase isn&apos;t connected yet</h1>
         <p className="mt-3 text-crew">
           Copy <code className="text-signal">.env.local.example</code> to{" "}
           <code className="text-signal">.env.local</code>, add your Supabase
@@ -28,12 +29,10 @@ export default async function SlotsPage() {
   const supabase = await createClient();
 
   // Soonest to close first — that's the queue a bidder actually cares about.
+  // slots_board() returns the same shape as slots_near(), so one card renders
+  // both and a phone client reads the identical contract.
   const [{ data: slots, error }, { data: { user } }] = await Promise.all([
-    supabase
-      .from("slots")
-      .select("*")
-      .eq("status", "open")
-      .order("closes_at", { ascending: true }),
+    supabase.rpc("slots_board", { p_limit: 100 }),
     supabase.auth.getUser(),
   ]);
 
@@ -53,40 +52,16 @@ export default async function SlotsPage() {
         p_radius_mi: saved.radius_mi,
         p_limit: 100,
       });
-      nearby = (near ?? []).map((row) => ({
-        id: row.id,
-        title: row.title,
-        shootDate: row.shoot_date,
-        location: row.location,
-        areaLabel: row.area_label,
-        floorRateCents: row.floor_rate_cents,
-        currentCents: row.current_cents,
-        claimCents: row.claim_cents,
-        closesAt: row.closes_at,
-        bidCount: row.bid_count,
-        distanceMi: row.distance_mi,
-      }));
+      nearby = (near ?? []).map(toBoardSlot);
     }
   }
 
-  const allItems: FeedItem[] = (slots ?? []).map((slot) => ({
-    id: slot.id,
-    title: slot.title,
-    shootDate: slot.shoot_date,
-    location: slot.location,
-    areaLabel: slot.area_label,
-    floorRateCents: slot.floor_rate_cents,
-    currentCents: slot.current_cents,
-    claimCents: slot.claim_cents,
-    closesAt: slot.closes_at,
-    bidCount: slot.bid_count,
-    distanceMi: null,
-  }));
+  const allItems: FeedItem[] = (slots ?? []).map(toBoardSlot);
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl">Open slots</h1>
+        <h1 className="text-3xl tracking-tight">Open slots</h1>
         <Link
           href="/slots/new"
           className="bg-signal px-4 py-2 text-sm font-medium text-stage transition hover:bg-signal-dim"

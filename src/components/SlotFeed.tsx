@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { saveMyLocation, saveSearchRadius } from "@/app/slots/location-actions";
@@ -13,22 +13,11 @@ import {
   storeArea,
   type SearchArea,
 } from "@/lib/geo";
-import { formatCents, formatShootDate } from "@/lib/types";
-import Countdown from "@/components/Countdown";
+import SlotCard, { toBoardSlot, type BoardSlot, type CardRow } from "@/components/SlotCard";
 
-export type FeedItem = {
-  id: string;
-  title: string;
-  shootDate: string;
-  location: string;
-  areaLabel: string | null;
-  floorRateCents: number;
-  currentCents: number | null;
-  claimCents: number;
-  closesAt: string;
-  bidCount: number;
-  distanceMi: number | null;
-};
+export type { BoardSlot as FeedItem };
+
+const ASPECT_CHIPS = ["All", "16:9", "9:16"] as const;
 
 export default function SlotFeed({
   allItems,
@@ -36,16 +25,18 @@ export default function SlotFeed({
   initialArea,
   signedIn,
 }: {
-  allItems: FeedItem[];
-  initialNearby: FeedItem[] | null;
+  allItems: BoardSlot[];
+  initialNearby: BoardSlot[] | null;
   initialArea: SearchArea | null;
   signedIn: boolean;
 }) {
   const [area, setArea] = useState<SearchArea | null>(initialArea);
   // null means "not filtering" — show everything the server sent.
-  const [nearby, setNearby] = useState<FeedItem[] | null>(initialNearby);
+  const [nearby, setNearby] = useState<BoardSlot[] | null>(initialNearby);
   const [busy, setBusy] = useState<"locating" | "loading" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aspect, setAspect] = useState<(typeof ASPECT_CHIPS)[number]>("All");
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchNearby = useCallback(async (next: SearchArea) => {
@@ -64,22 +55,7 @@ export default function SlotFeed({
       setError(rpcError.message);
       return;
     }
-
-    setNearby(
-      (data ?? []).map((row) => ({
-        id: row.id,
-        title: row.title,
-        shootDate: row.shoot_date,
-        location: row.location,
-        areaLabel: row.area_label,
-        floorRateCents: row.floor_rate_cents,
-        currentCents: row.current_cents,
-        claimCents: row.claim_cents,
-        closesAt: row.closes_at,
-        bidCount: row.bid_count,
-        distanceMi: row.distance_mi,
-      }))
-    );
+    setNearby((data ?? []).map((row) => toBoardSlot(row as CardRow)));
   }, []);
 
   // A signed-out visitor's area lives in this browser only; a signed-in one
@@ -146,88 +122,136 @@ export default function SlotFeed({
     if (!signedIn) storeArea(null);
   }
 
-  const items = nearby ?? allItems;
+  const source = nearby ?? allItems;
   const filtering = nearby !== null;
+
+  const ceiling = useMemo(() => {
+    const top = Math.max(
+      0,
+      ...source.map((s) => s.currentCents ?? s.floorRateCents)
+    );
+    // Round up to a clean number so the slider's top end has a sane label.
+    return Math.max(100000, Math.ceil(top / 50000) * 50000);
+  }, [source]);
+
+  const items = useMemo(
+    () =>
+      source.filter((slot) => {
+        if (aspect !== "All" && slot.aspect !== aspect) return false;
+        if (maxPrice !== null && (slot.currentCents ?? slot.floorRateCents) > maxPrice) {
+          return false;
+        }
+        return true;
+      }),
+    [source, aspect, maxPrice]
+  );
 
   return (
     <>
-      <div className="mt-6 border border-line bg-rack p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-crew">
-              {filtering ? "Slots near you" : "Everything open"}
-            </p>
-            <p className="mt-1 text-sm text-crew">
-              {filtering
-                ? `Within ${area?.radiusMi ?? DEFAULT_RADIUS_MI} miles · ${items.length} ${
-                    items.length === 1 ? "slot" : "slots"
-                  }`
-                : "Turn on location to sort by how far away the shoot is."}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {filtering && (
-              <button
-                onClick={handleClear}
-                className="text-xs text-crew underline transition hover:text-key"
-              >
-                Show all
-              </button>
-            )}
+      {/* Filter row, in the site's chip-and-slider style */}
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-y border-line py-3">
+        <div className="flex gap-px bg-line">
+          {ASPECT_CHIPS.map((chip) => (
             <button
-              onClick={handleUseMyLocation}
-              disabled={busy !== null}
-              className="border border-line px-4 py-2 text-sm font-medium text-key transition hover:border-signal hover:text-signal disabled:opacity-60"
+              key={chip}
+              onClick={() => setAspect(chip)}
+              className={`px-4 py-1.5 text-sm transition ${
+                aspect === chip
+                  ? "bg-rack-2 font-medium text-key"
+                  : "bg-rack text-crew hover:text-key"
+              }`}
             >
-              {busy === "locating"
-                ? "Locating…"
-                : area
-                  ? "Update my location"
-                  : "Use my location"}
+              {chip}
             </button>
-          </div>
+          ))}
         </div>
 
-        {area && filtering && (
-          <label className="mt-4 flex items-center gap-3 text-sm">
-            <span className="w-28 shrink-0 text-xs uppercase tracking-widest text-crew">
-              Radius
-            </span>
-            <input
-              type="range"
-              min={MIN_RADIUS_MI}
-              max={MAX_RADIUS_MI}
-              step={1}
-              value={area.radiusMi}
-              onChange={(e) => handleRadius(Number(e.target.value))}
-              className="w-full accent-signal"
-            />
-            <span className="w-20 shrink-0 text-right tabular-nums text-key">
-              {area.radiusMi} mi
-            </span>
-          </label>
-        )}
+        <label className="flex items-center gap-3">
+          <span className="label">Price</span>
+          <input
+            type="range"
+            min={10000}
+            max={ceiling}
+            step={10000}
+            value={maxPrice ?? ceiling}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              setMaxPrice(value >= ceiling ? null : value);
+            }}
+            className="w-36 accent-signal"
+          />
+          <span className="meta w-28 shrink-0">
+            {maxPrice === null
+              ? `$0–$${(ceiling / 100).toLocaleString()}`
+              : `up to $${(maxPrice / 100).toLocaleString()}`}
+          </span>
+        </label>
 
-        <p className="mt-3 text-xs text-crew">
-          Your location is rounded to about a kilometre before it&apos;s stored, and
-          a slot&apos;s exact address only reaches the person who books it.
-        </p>
+        <div className="ml-auto flex items-center gap-3">
+          {filtering && area && (
+            <label className="flex items-center gap-2">
+              <span className="label">Within</span>
+              <input
+                type="range"
+                min={MIN_RADIUS_MI}
+                max={MAX_RADIUS_MI}
+                step={1}
+                value={area.radiusMi}
+                onChange={(e) => handleRadius(Number(e.target.value))}
+                className="w-28 accent-signal"
+              />
+              <span className="meta w-12 shrink-0">{area.radiusMi} mi</span>
+            </label>
+          )}
 
-        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+          {filtering && (
+            <button
+              onClick={handleClear}
+              className="meta text-crew underline transition hover:text-key"
+            >
+              Show all
+            </button>
+          )}
+
+          <button
+            onClick={handleUseMyLocation}
+            disabled={busy !== null}
+            className="btn-ghost h-9 px-4 text-sm disabled:opacity-60"
+          >
+            {busy === "locating"
+              ? "Locating…"
+              : area
+                ? "Update location"
+                : "Near me"}
+          </button>
+        </div>
       </div>
 
-      {items.length === 0 && (
-        <p className="mt-8 text-crew">
+      <p className="meta mt-3">
+        {busy === "loading"
+          ? "Loading…"
+          : filtering
+            ? `Within ${area?.radiusMi ?? DEFAULT_RADIUS_MI} miles · ${items.length} ${
+                items.length === 1 ? "slot" : "slots"
+              }`
+            : `${items.length} open · sorted by soonest close`}
+      </p>
+
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+
+      {items.length === 0 ? (
+        <p className="mt-10 text-crew">
           {filtering ? (
             <>
-              Nothing open within {area?.radiusMi ?? DEFAULT_RADIUS_MI} miles. Widen
-              the radius, or{" "}
+              Nothing open within {area?.radiusMi ?? DEFAULT_RADIUS_MI} miles.
+              Widen the radius, or{" "}
               <button onClick={handleClear} className="text-signal underline">
                 show everything
               </button>
               .
             </>
+          ) : source.length > 0 ? (
+            "No slots match those filters."
           ) : (
             <>
               No open slots yet. Be the first to{" "}
@@ -238,45 +262,20 @@ export default function SlotFeed({
             </>
           )}
         </p>
+      ) : (
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {items.map((slot) => (
+            <li key={slot.id}>
+              <SlotCard slot={slot} />
+            </li>
+          ))}
+        </ul>
       )}
 
-      <ul className="mt-8 divide-y divide-line border-t border-line">
-        {items.map((slot) => (
-          <li key={slot.id}>
-            <Link
-              href={`/slots/${slot.id}`}
-              className="flex items-center justify-between gap-4 py-5 transition hover:opacity-80"
-            >
-              <div>
-                <p className="font-display text-lg">{slot.title}</p>
-                <p className="mt-1 text-sm text-crew">
-                  {formatShootDate(slot.shootDate)} &middot;{" "}
-                  {slot.areaLabel ?? slot.location}
-                  {slot.distanceMi !== null && (
-                    <span className="text-signal"> &middot; {slot.distanceMi} mi</span>
-                  )}
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-widest text-crew">
-                  <Countdown closesAt={slot.closesAt} className="tabular-nums" />
-                  {" · "}
-                  {slot.bidCount} {slot.bidCount === 1 ? "bid" : "bids"}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="font-display text-2xl tabular-nums text-signal">
-                  {formatCents(slot.currentCents ?? slot.floorRateCents)}
-                </p>
-                <p className="text-xs uppercase tracking-widest text-crew">
-                  {slot.bidCount > 0 ? "current bid" : "floor"}
-                </p>
-                <p className="mt-1 text-xs text-crew">
-                  claim {formatCents(slot.claimCents)}
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <p className="meta mt-8">
+        Your location is rounded to about a kilometre before it&apos;s stored, and
+        a slot&apos;s exact address only reaches the person who books it.
+      </p>
     </>
   );
 }
