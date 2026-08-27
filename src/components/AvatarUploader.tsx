@@ -2,8 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { saveAvatar } from "@/app/u/actions";
+import { humanSize, uploadWithProgress } from "@/lib/upload";
 
 const MAX_BYTES = 5 * 1024 * 1024; // matches the avatars bucket limit
 
@@ -16,26 +16,29 @@ export default function AvatarUploader({ userId }: { userId: string }) {
   async function handleFile(file: File) {
     setError(null);
     if (file.size > MAX_BYTES) {
-      setError("Pictures need to be under 5MB.");
+      setError(`That's ${humanSize(file.size)}. Pictures need to be under 5 MB.`);
       return;
     }
 
     setBusy(true);
-    const supabase = createClient();
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${userId}/${Date.now()}.${ext}`;
+    const uploaded = await uploadWithProgress({
+      bucket: "avatars",
+      path: `${userId}/${Date.now()}.${ext}`,
+      file,
+    });
 
-    const { error: upErr } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { contentType: file.type, upsert: false });
-    if (upErr) {
+    if ("cancelled" in uploaded) {
       setBusy(false);
-      setError(upErr.message);
+      return;
+    }
+    if ("error" in uploaded) {
+      setBusy(false);
+      setError(uploaded.error);
       return;
     }
 
-    const url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-    const result = await saveAvatar(url);
+    const result = await saveAvatar(uploaded.url);
     setBusy(false);
 
     if ("error" in result) {
