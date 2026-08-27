@@ -1,0 +1,7 @@
+# Minimal config so `supabase link` / `supabase db push` work from the repo.
+# The CLI fills in the rest; only project_id is needed to link.
+project_id = "nubid"
+
+[db]
+# Match production so a local or test database behaves the same.
+major_version = 17

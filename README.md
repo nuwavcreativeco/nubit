@@ -104,6 +104,27 @@ the relationship named explicitly — `slots!bids_slot_id_fkey(*)`, as used in
 5. **Deploy** — pushing to `main` deploys to Vercel. The same two
    environment variables need to be set in the Vercel project settings.
 
+## A test database
+
+`nubid-test` (project ref `iatotzexniivpppwyfrm`) is an empty second Supabase
+project on the free tier — $0/month. Branching would have been the natural
+choice, but it needs the Pro plan; a second free project gives the same
+isolation.
+
+It is deliberately empty, because filling it is the test. These two commands
+apply all 42 migrations in filename order, which is the only real proof that
+`supabase/migrations/` can rebuild the schema from nothing:
+
+```bash
+npx supabase link --project-ref iatotzexniivpppwyfrm
+npx supabase db push
+```
+
+Both need credentials this repo doesn't hold — `link` opens a browser login,
+and `db push` asks for that project's database password. Once it's populated,
+point `.env.local` at the test project to exercise the app without touching
+production, and run the suite below against it.
+
 ## Testing
 
 `supabase/tests/suite.sql` is the database test suite — 20 assertions over the
