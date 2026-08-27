@@ -152,6 +152,44 @@ What it does not cover: anything in a browser. Reel upload, the realtime bell,
 and the offer UI need a signed-in session and a real file — see the launch
 notes below.
 
+## Browser tests
+
+Playwright, in `e2e/`. Four projects:
+
+```bash
+npm run test:e2e:public   # no accounts needed
+npm run test:e2e          # everything, needs .env.test
+```
+
+`public` covers what a stranger sees — the landing page, the board card's
+anatomy (including that REC really is red and the primary button is
+black-on-cyan rather than the site's 1.9:1 white), the aspect filter, a slot
+page, and that the signed-out private routes ask for a sign in instead of
+throwing a 500. **These six pass today.**
+
+The rest need two throwaway accounts on the test project. Copy
+`.env.test.example` to `.env.test` and fill it in; `playwright.config.ts`
+reads it automatically. `auth.setup.ts` signs both in through the real form
+and saves the cookies, so the login path is covered by the act of setting up
+— seeding cookies directly would mean reverse-engineering `@supabase/ssr`'s
+chunked format and getting a suite that passes while sign-in is broken.
+
+- `upload.shooter.spec.ts` — a vertical clip lands tagged 9:16 (proving the
+  aspect comes from the pixels), a large file reports progress, an
+  undecodable file asks for the shape instead of silently defaulting to 16:9,
+  and an oversized file is refused before anything uploads.
+- `follow.both.spec.ts` — follow, then post from the other session, and the
+  bell rings on the first with the right day.
+- `offer.both.spec.ts` — a cold message lands in requests and moves to primary
+  once followed; an offer sent, accepted, and booked as a real settled day.
+
+There is no video fixture in the repo. `e2e/video.ts` records one in the
+browser with canvas + MediaRecorder, so the clip is genuinely decodable and
+the uploader's probe has something real to read.
+
+**Point these at the test project, never production.** They post days, send
+offers and book shoots for real; unlike the SQL suite there is no rollback.
+
 ## Next build steps
 
 The phone design system in `Nubid bidding platform.zip` (tokens, six screens,

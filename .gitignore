@@ -13,3 +13,13 @@ supabase/.claude
 
 # Supabase CLI scratch
 supabase/.temp
+
+# Playwright
+e2e/.auth
+test-results
+playwright-report
+.env.test
+
+# ...but the templates must be committed
+!.env.local.example
+!.env.test.example
