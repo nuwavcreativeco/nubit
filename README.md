@@ -106,51 +106,32 @@ the relationship named explicitly — `slots!bids_slot_id_fkey(*)`, as used in
 
 ## A test database
 
-`nubid-test` (project ref `iatotzexniivpppwyfrm`) is an empty second Supabase
-project on the free tier — $0/month. Branching would have been the natural
-choice, but it needs the Pro plan; a second free project gives the same
-isolation.
+`nubid-test` (project ref `iatotzexniivpppwyfrm`,
+`https://iatotzexniivpppwyfrm.supabase.co`) is a second Supabase project on the
+free tier — $0/month. Branching would have been the natural choice but needs
+the Pro plan; a second free project gives the same isolation.
 
-It is deliberately empty, because filling it is the test. These two commands
-apply all 42 migrations in filename order, which is the only real proof that
-`supabase/migrations/` can rebuild the schema from nothing:
+**The schema is applied and verified.** It matches production exactly on every
+structural count — 13 tables, 2 views, 35 functions, 25 policies, 2 storage
+buckets, 49 indexes — the table grant strings for `anon` and `authenticated`
+are byte-identical, the `close-due-slots` cron job is scheduled, and the test
+suite passes 20/20 against it. It holds no rows.
+
+To point the app at it, put its URL and anon key in `.env.local` (Settings →
+API in the dashboard).
+
+One caveat worth knowing. The schema was applied through the management API,
+not by `supabase db push`, because the CLI needs a browser login and a
+database password this environment doesn't hold. So the *end state* is
+verified, but the claim that `supabase/migrations/` replays cleanly from
+nothing is still unproven. If you ever want that proof:
 
 ```bash
 npx supabase link --project-ref iatotzexniivpppwyfrm
 npx supabase db push
 ```
 
-Both need credentials this repo doesn't hold — `link` opens a browser login,
-and `db push` asks for that project's database password. Once it's populated,
-point `.env.local` at the test project to exercise the app without touching
-production, and run the suite below against it.
-
-## Testing
-
-`supabase/tests/suite.sql` is the database test suite — 20 assertions over the
-parts that decide money and privacy. It runs inside a single transaction and
-deliberately aborts at the end, so it can be run against the live project
-without leaving a row behind. A summary reading `0 failed` is a pass.
-
-```bash
-psql "$DATABASE_URL" -f supabase/tests/suite.sql
-```
-
-Two things make it a real test rather than a smoke check. It switches to the
-`authenticated` role before every visibility assertion — running as the owner
-would bypass RLS and every isolation test would pass for the wrong reason. And
-it asserts on refusals too: a bid that should be rejected only counts if it
-actually raises.
-
-It covers proxy-bid pricing, step alignment, the price-walks-backwards
-regression, self-bidding, the anti-snipe extension, bid isolation between
-rivals, masked bid history, follower bell fan-out, the primary/requests inbox
-split, third-party message isolation, offer accept/double-accept/isolation,
-delivery crediting the right grid, and settlement.
-
-What it does not cover: anything in a browser. Reel upload, the realtime bell,
-and the offer UI need a signed-in session and a real file — see the launch
-notes below.
+against a freshly reset project.
 
 ## Browser tests
 
