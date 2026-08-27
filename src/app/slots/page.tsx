@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatCents, type Slot } from "@/lib/types";
+import type { SearchArea } from "@/lib/geo";
+import SlotFeed, { type FeedItem } from "@/components/SlotFeed";
 
 function isSupabaseConfigured() {
   return Boolean(
@@ -14,9 +15,9 @@ export default async function SlotsPage() {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-start justify-center px-6 py-24">
         <h1 className="font-display text-2xl">Supabase isn&apos;t connected yet</h1>
-        <p className="mt-3 text-ink-dim">
-          Copy <code className="text-brass">.env.local.example</code> to{" "}
-          <code className="text-brass">.env.local</code>, add your Supabase
+        <p className="mt-3 text-crew">
+          Copy <code className="text-signal">.env.local.example</code> to{" "}
+          <code className="text-signal">.env.local</code>, add your Supabase
           project URL and anon key, then restart the dev server to see real
           slots here.
         </p>
@@ -25,11 +26,62 @@ export default async function SlotsPage() {
   }
 
   const supabase = await createClient();
-  const { data: slots, error } = await supabase
-    .from("slots")
-    .select("*")
-    .eq("status", "open")
-    .order("created_at", { ascending: false });
+
+  // Soonest to close first — that's the queue a bidder actually cares about.
+  const [{ data: slots, error }, { data: { user } }] = await Promise.all([
+    supabase
+      .from("slots")
+      .select("*")
+      .eq("status", "open")
+      .order("closes_at", { ascending: true }),
+    supabase.auth.getUser(),
+  ]);
+
+  // A signed-in bidder's search area comes off their profile, so the first
+  // paint is already filtered — no location prompt, no flash of the full list.
+  let area: SearchArea | null = null;
+  let nearby: FeedItem[] | null = null;
+
+  if (user) {
+    const { data: areaRows } = await supabase.rpc("my_search_area");
+    const saved = areaRows?.[0];
+    if (saved) {
+      area = { lat: saved.lat, lng: saved.lng, radiusMi: saved.radius_mi };
+      const { data: near } = await supabase.rpc("slots_near", {
+        p_lat: saved.lat,
+        p_lng: saved.lng,
+        p_radius_mi: saved.radius_mi,
+        p_limit: 100,
+      });
+      nearby = (near ?? []).map((row) => ({
+        id: row.id,
+        title: row.title,
+        shootDate: row.shoot_date,
+        location: row.location,
+        areaLabel: row.area_label,
+        floorRateCents: row.floor_rate_cents,
+        currentCents: row.current_cents,
+        claimCents: row.claim_cents,
+        closesAt: row.closes_at,
+        bidCount: row.bid_count,
+        distanceMi: row.distance_mi,
+      }));
+    }
+  }
+
+  const allItems: FeedItem[] = (slots ?? []).map((slot) => ({
+    id: slot.id,
+    title: slot.title,
+    shootDate: slot.shoot_date,
+    location: slot.location,
+    areaLabel: slot.area_label,
+    floorRateCents: slot.floor_rate_cents,
+    currentCents: slot.current_cents,
+    claimCents: slot.claim_cents,
+    closesAt: slot.closes_at,
+    bidCount: slot.bid_count,
+    distanceMi: null,
+  }));
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
@@ -37,7 +89,7 @@ export default async function SlotsPage() {
         <h1 className="font-display text-3xl">Open slots</h1>
         <Link
           href="/slots/new"
-          className="rounded-md bg-brass px-4 py-2 text-sm font-medium text-canvas transition hover:bg-brass-dim"
+          className="bg-signal px-4 py-2 text-sm font-medium text-stage transition hover:bg-signal-dim"
         >
           Post a slot
         </Link>
@@ -49,46 +101,12 @@ export default async function SlotsPage() {
         </p>
       )}
 
-      {!error && slots && slots.length === 0 && (
-        <p className="mt-8 text-ink-dim">
-          No open slots yet. Be the first to{" "}
-          <Link href="/slots/new" className="text-brass underline">
-            post one
-          </Link>
-          .
-        </p>
-      )}
-
-      <ul className="mt-8 divide-y divide-line border-t border-line">
-        {(slots as Slot[] | null)?.map((slot) => (
-          <li key={slot.id}>
-            <Link
-              href={`/slots/${slot.id}`}
-              className="flex items-center justify-between py-5 transition hover:opacity-80"
-            >
-              <div>
-                <p className="font-display text-lg">{slot.title}</p>
-                <p className="mt-1 text-sm text-ink-dim">
-                  {new Date(slot.shoot_date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}{" "}
-                  &middot; {slot.location}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-display text-brass">
-                  {formatCents(slot.floor_rate_cents)}
-                </p>
-                <p className="text-xs uppercase tracking-widest text-ink-dim">
-                  floor
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <SlotFeed
+        allItems={allItems}
+        initialNearby={nearby}
+        initialArea={area}
+        signedIn={Boolean(user)}
+      />
     </main>
   );
 }

@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { formatCents, type SlotStatus } from "@/lib/types";
+import {
+  formatCents,
+  formatShootDate,
+  isSlotStatus,
+  type SlotStatus,
+} from "@/lib/types";
+import Countdown from "@/components/Countdown";
+import SetSlotLocationButton from "@/components/SetSlotLocationButton";
 
 type LiveSlot = {
   id: string;
@@ -11,8 +18,11 @@ type LiveSlot = {
   shootDate: string;
   location: string;
   floorRateCents: number;
+  currentCents: number | null;
+  closesAt: string;
   status: SlotStatus;
   bidCount: number;
+  located: boolean;
 };
 
 export default function MySlotsLive({
@@ -26,55 +36,54 @@ export default function MySlotsLive({
 
   useEffect(() => {
     const supabase = createClient();
-    const slotIds = initialSlots.map((s) => s.id);
 
-    const channel = supabase.channel(`my-slots:${videographerId}`).on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "slots",
-        filter: `videographer_id=eq.${videographerId}`,
-      },
-      (payload) => {
-        const row = payload.new as { id: string; status: SlotStatus };
-        setSlots((prev) => prev.map((s) => (s.id === row.id ? { ...s, status: row.status } : s)));
-      }
-    );
-
-    if (slotIds.length > 0) {
-      channel.on(
+    // slots carries its own bid_count and current_cents, so one subscription
+    // on the poster's own rows covers price, bid count, and settlement.
+    const channel = supabase
+      .channel(`my-slots:${videographerId}`)
+      .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "UPDATE",
           schema: "public",
-          table: "bids",
-          filter: `slot_id=in.(${slotIds.join(",")})`,
+          table: "slots",
+          filter: `videographer_id=eq.${videographerId}`,
         },
         (payload) => {
-          const row = payload.new as { slot_id: string };
+          const row = payload.new as {
+            id: string;
+            status: string;
+            bid_count: number;
+            current_cents: number | null;
+            closes_at: string;
+          };
           setSlots((prev) =>
-            prev.map((s) => (s.id === row.slot_id ? { ...s, bidCount: s.bidCount + 1 } : s))
+            prev.map((s) =>
+              s.id === row.id
+                ? {
+                    ...s,
+                    status: isSlotStatus(row.status) ? row.status : s.status,
+                    bidCount: row.bid_count,
+                    currentCents: row.current_cents,
+                    closesAt: row.closes_at,
+                  }
+                : s
+            )
           );
         }
-      );
-    }
-
-    channel.subscribe();
+      )
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-    // Subscribe once for the slots this page loaded with — a slot posted
-    // after mount won't be covered until the next full page load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videographerId]);
 
   if (slots.length === 0) {
     return (
-      <p className="mt-8 text-ink-dim">
+      <p className="mt-8 text-crew">
         You haven&apos;t posted a slot yet.{" "}
-        <Link href="/slots/new" className="text-brass underline">
+        <Link href="/slots/new" className="text-signal underline">
           Post one
         </Link>
         .
@@ -88,23 +97,39 @@ export default function MySlotsLive({
         <li key={slot.id}>
           <Link
             href={`/slots/${slot.id}`}
-            className="flex items-center justify-between py-5 transition hover:opacity-80"
+            className="flex items-center justify-between gap-4 py-5 transition hover:opacity-80"
           >
             <div>
               <p className="font-display text-lg">{slot.title}</p>
-              <p className="mt-1 text-sm text-ink-dim">
-                {new Date(slot.shootDate).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}{" "}
-                &middot; {slot.location} &middot; {slot.bidCount}{" "}
-                {slot.bidCount === 1 ? "bid" : "bids"}
+              <p className="mt-1 text-sm text-crew">
+                {formatShootDate(slot.shootDate)} &middot; {slot.location} &middot;{" "}
+                {slot.bidCount} {slot.bidCount === 1 ? "bid" : "bids"}
+              </p>
+              {slot.status === "open" && (
+                <p className="mt-1 text-xs uppercase tracking-widest text-crew">
+                  <Countdown closesAt={slot.closesAt} className="tabular-nums" />
+                </p>
+              )}
+              <p className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                <span className={slot.located ? "text-signal" : "text-crew"}>
+                  {slot.located ? "Pinned for nearby search" : "No pin — hidden from nearby search"}
+                </span>
+                {slot.status === "open" && slot.bidCount === 0 && (
+                  <SetSlotLocationButton
+                    slotId={slot.id}
+                    address={slot.location}
+                    located={slot.located}
+                  />
+                )}
               </p>
             </div>
-            <div className="text-right">
-              <p className="font-display text-brass">{formatCents(slot.floorRateCents)}</p>
-              <p className="text-xs uppercase tracking-widest text-ink-dim">{slot.status}</p>
+            <div className="shrink-0 text-right">
+              <p className="font-display text-xl tabular-nums text-signal">
+                {formatCents(slot.currentCents ?? slot.floorRateCents)}
+              </p>
+              <p className="text-xs uppercase tracking-widest text-crew">
+                {slot.status}
+              </p>
             </div>
           </Link>
         </li>

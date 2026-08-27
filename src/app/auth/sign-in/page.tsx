@@ -19,9 +19,9 @@ export default function SignInPage() {
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-6 py-16">
       <h1 className="font-display text-3xl">Sign in</h1>
-      <p className="mt-2 text-ink-dim">
+      <p className="mt-2 text-crew">
         New here?{" "}
-        <Link href="/auth/sign-up" className="text-brass underline">
+        <Link href="/auth/sign-up" className="text-signal underline">
           Create an account
         </Link>
         .
@@ -35,7 +35,7 @@ export default function SignInPage() {
             name="email"
             required
             placeholder="you@example.com"
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
@@ -45,7 +45,7 @@ export default function SignInPage() {
             type="password"
             name="password"
             required
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
@@ -54,7 +54,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={pending}
-          className="mt-2 rounded-md bg-brass px-5 py-3 text-sm font-medium text-canvas transition hover:bg-brass-dim disabled:opacity-60"
+          className="mt-2 bg-signal px-5 py-3 text-sm font-medium text-stage transition hover:bg-signal-dim disabled:opacity-60"
         >
           {pending ? "Signing in…" : "Sign in"}
         </button>

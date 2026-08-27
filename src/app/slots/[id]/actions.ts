@@ -2,9 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { formatCents } from "@/lib/types";
+import type { BidOutcome } from "@/lib/types";
 
-export async function placeBid(slotId: string, formData: FormData) {
+type ActionResult = { error: string } | { outcome: BidOutcome };
+
+/**
+ * Bidding goes through place_bid() rather than an insert: the function holds
+ * a row lock while it works out the proxy price, enforces the step/floor/
+ * claim bounds, and extends closes_at when a bid lands inside the last five
+ * minutes. Clients have no INSERT policy on bids at all.
+ */
+export async function placeBid(
+  slotId: string,
+  formData: FormData
+): Promise<ActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -14,45 +25,14 @@ export async function placeBid(slotId: string, formData: FormData) {
     return { error: "You need to be signed in to bid." };
   }
 
-  const amountDollars = Number(formData.get("amount") ?? 0);
-  if (!(amountDollars > 0)) {
-    return { error: "Enter a bid amount above $0." };
-  }
-  const amountCents = Math.round(amountDollars * 100);
-
-  const { data: slot, error: slotError } = await supabase
-    .from("slots")
-    .select("id, status, videographer_id, floor_rate_cents")
-    .eq("id", slotId)
-    .single();
-
-  if (slotError || !slot) {
-    return { error: "Slot not found." };
-  }
-  if (slot.status !== "open") {
-    return { error: "This slot isn't open for bidding." };
-  }
-  if (slot.videographer_id === user.id) {
-    return { error: "You can't bid on your own slot." };
+  const maxDollars = Number(formData.get("max") ?? 0);
+  if (!Number.isFinite(maxDollars) || maxDollars <= 0) {
+    return { error: "Enter a maximum above $0." };
   }
 
-  const { data: highBid } = await supabase
-    .from("bids")
-    .select("amount_cents")
-    .eq("slot_id", slotId)
-    .order("amount_cents", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const minCents = highBid?.amount_cents ?? slot.floor_rate_cents;
-  if (amountCents <= minCents) {
-    return { error: `Your bid needs to beat ${formatCents(minCents)}.` };
-  }
-
-  const { error } = await supabase.from("bids").insert({
-    slot_id: slotId,
-    bidder_id: user.id,
-    amount_cents: amountCents,
+  const { data, error } = await supabase.rpc("place_bid", {
+    p_slot: slotId,
+    p_max_cents: Math.round(maxDollars * 100),
   });
 
   if (error) {
@@ -60,52 +40,28 @@ export async function placeBid(slotId: string, formData: FormData) {
   }
 
   revalidatePath(`/slots/${slotId}`);
+  revalidatePath("/bids/mine");
+  return { outcome: data as unknown as BidOutcome };
 }
 
-export async function awardBid(slotId: string, bidId: string) {
+/** Buy-it-now at the slot's claim price — ends the auction immediately. */
+export async function claimSlot(slotId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "You need to be signed in." };
+    return { error: "You need to be signed in to claim a day." };
   }
 
-  const { data: slot, error: slotError } = await supabase
-    .from("slots")
-    .select("id, status, videographer_id")
-    .eq("id", slotId)
-    .single();
-
-  if (slotError || !slot) {
-    return { error: "Slot not found." };
-  }
-  if (slot.videographer_id !== user.id) {
-    return { error: "Only the videographer who posted this slot can award it." };
-  }
-  if (slot.status !== "open") {
-    return { error: "This slot has already been decided." };
-  }
-
-  const { data: bid, error: bidError } = await supabase
-    .from("bids")
-    .select("id, slot_id")
-    .eq("id", bidId)
-    .single();
-
-  if (bidError || !bid || bid.slot_id !== slotId) {
-    return { error: "That bid doesn't belong to this slot." };
-  }
-
-  const { error } = await supabase
-    .from("slots")
-    .update({ status: "awarded", awarded_bid_id: bidId })
-    .eq("id", slotId);
+  const { data, error } = await supabase.rpc("claim_slot", { p_slot: slotId });
 
   if (error) {
     return { error: error.message };
   }
 
   revalidatePath(`/slots/${slotId}`);
+  revalidatePath("/bids/mine");
+  return { outcome: data as unknown as BidOutcome };
 }

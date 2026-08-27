@@ -22,9 +22,9 @@ export default function SignUpPage() {
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-6 py-16">
       <h1 className="font-display text-3xl">Create an account</h1>
-      <p className="mt-2 text-ink-dim">
+      <p className="mt-2 text-crew">
         Already have one?{" "}
-        <Link href="/auth/sign-in" className="text-brass underline">
+        <Link href="/auth/sign-in" className="text-signal underline">
           Sign in
         </Link>
         .
@@ -34,11 +34,11 @@ export default function SignUpPage() {
         <fieldset className="flex flex-col gap-2 text-sm">
           <legend className="mb-1">I&apos;m a...</legend>
           <div className="flex gap-4">
-            <label className="flex flex-1 items-center gap-2 rounded-md border border-line bg-canvas-raised px-3 py-2 has-[:checked]:border-brass">
+            <label className="flex flex-1 items-center gap-2 border border-line bg-rack px-3 py-2 has-[:checked]:border-signal">
               <input type="radio" name="role" value="videographer" required />
               Videographer
             </label>
-            <label className="flex flex-1 items-center gap-2 rounded-md border border-line bg-canvas-raised px-3 py-2 has-[:checked]:border-teal">
+            <label className="flex flex-1 items-center gap-2 border border-line bg-rack px-3 py-2 has-[:checked]:border-signal">
               <input type="radio" name="role" value="bidder" required />
               Bidder
             </label>
@@ -51,7 +51,7 @@ export default function SignUpPage() {
             name="display_name"
             required
             placeholder="Jordan Reyes"
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
@@ -59,8 +59,8 @@ export default function SignUpPage() {
           City (optional)
           <input
             name="city"
-            placeholder="Seattle"
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            placeholder="Your city"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
@@ -71,7 +71,7 @@ export default function SignUpPage() {
             name="email"
             required
             placeholder="you@example.com"
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
@@ -83,17 +83,17 @@ export default function SignUpPage() {
             required
             minLength={6}
             placeholder="At least 6 characters"
-            className="rounded-md border border-line bg-canvas-raised px-3 py-2 text-ink outline-none focus:border-brass"
+            className="border border-line bg-rack px-3 py-2 text-key outline-none focus:border-signal"
           />
         </label>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
-        {message && <p className="text-sm text-teal">{message}</p>}
+        {message && <p className="text-sm text-signal">{message}</p>}
 
         <button
           type="submit"
           disabled={pending}
-          className="mt-2 rounded-md bg-brass px-5 py-3 text-sm font-medium text-canvas transition hover:bg-brass-dim disabled:opacity-60"
+          className="mt-2 bg-signal px-5 py-3 text-sm font-medium text-stage transition hover:bg-signal-dim disabled:opacity-60"
         >
           {pending ? "Creating account…" : "Create account"}
         </button>

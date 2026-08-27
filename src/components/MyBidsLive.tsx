@@ -3,73 +3,55 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { formatCents, type SlotStatus } from "@/lib/types";
+import { formatCents, isSlotStatus, type SlotStatus } from "@/lib/types";
+import Countdown from "@/components/Countdown";
 
-type LiveBid = {
-  id: string;
-  amountCents: number;
+type LiveEntry = {
   slotId: string;
   slotTitle: string;
-  slotStatus: SlotStatus;
-  awardedBidId: string | null;
+  yourMaxCents: number;
+  currentCents: number | null;
   floorRateCents: number;
+  closesAt: string;
+  slotStatus: SlotStatus;
+  leaderId: string | null;
+  winnerId: string | null;
 };
 
-function bidStatusLabel(bid: LiveBid, highestBySlot: Map<string, number>) {
-  if (bid.slotStatus === "cancelled") {
-    return { text: "Cancelled", className: "text-ink-dim" };
+function entryStatus(entry: LiveEntry, userId: string) {
+  switch (entry.slotStatus) {
+    case "cancelled":
+      return { text: "Cancelled", className: "text-crew" };
+    case "expired":
+      return { text: "Closed, no winner", className: "text-crew" };
+    case "won":
+    case "claimed":
+      return entry.winnerId === userId
+        ? { text: "You won", className: "text-signal" }
+        : { text: "Went to another bidder", className: "text-crew" };
+    default:
+      return entry.leaderId === userId
+        ? { text: "Leading", className: "text-signal" }
+        : { text: "Outbid", className: "text-red-400" };
   }
-  if (bid.slotStatus === "awarded") {
-    return bid.awardedBidId === bid.id
-      ? { text: "You won", className: "text-teal" }
-      : { text: "Awarded to another bidder", className: "text-ink-dim" };
-  }
-  const highest = highestBySlot.get(bid.slotId) ?? bid.floorRateCents;
-  return bid.amountCents >= highest
-    ? { text: "Winning", className: "text-teal" }
-    : { text: "Outbid", className: "text-red-400" };
 }
 
 export default function MyBidsLive({
   userId,
-  initialBids,
-  initialHighestBySlot,
+  initialEntries,
 }: {
   userId: string;
-  initialBids: LiveBid[];
-  initialHighestBySlot: Record<string, number>;
+  initialEntries: LiveEntry[];
 }) {
-  const [bids, setBids] = useState<LiveBid[]>(initialBids);
-  const [highestBySlot, setHighestBySlot] = useState<Map<string, number>>(
-    () => new Map(Object.entries(initialHighestBySlot))
-  );
+  const [entries, setEntries] = useState<LiveEntry[]>(initialEntries);
 
   useEffect(() => {
-    const supabase = createClient();
-    const slotIds = [...new Set(initialBids.map((b) => b.slotId))];
+    const slotIds = entries.map((e) => e.slotId);
     if (slotIds.length === 0) return;
 
+    const supabase = createClient();
     const channel = supabase
       .channel(`my-bids:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "bids",
-          filter: `slot_id=in.(${slotIds.join(",")})`,
-        },
-        (payload) => {
-          const row = payload.new as { slot_id: string; amount_cents: number };
-          setHighestBySlot((prev) => {
-            const current = prev.get(row.slot_id) ?? 0;
-            if (row.amount_cents <= current) return prev;
-            const next = new Map(prev);
-            next.set(row.slot_id, row.amount_cents);
-            return next;
-          });
-        }
-      )
       .on(
         "postgres_changes",
         {
@@ -81,14 +63,24 @@ export default function MyBidsLive({
         (payload) => {
           const row = payload.new as {
             id: string;
-            status: SlotStatus;
-            awarded_bid_id: string | null;
+            status: string;
+            current_cents: number | null;
+            leader_id: string | null;
+            winner_id: string | null;
+            closes_at: string;
           };
-          setBids((prev) =>
-            prev.map((b) =>
-              b.slotId === row.id
-                ? { ...b, slotStatus: row.status, awardedBidId: row.awarded_bid_id }
-                : b
+          setEntries((prev) =>
+            prev.map((e) =>
+              e.slotId === row.id
+                ? {
+                    ...e,
+                    slotStatus: isSlotStatus(row.status) ? row.status : e.slotStatus,
+                    currentCents: row.current_cents,
+                    leaderId: row.leader_id,
+                    winnerId: row.winner_id,
+                    closesAt: row.closes_at,
+                  }
+                : e
             )
           );
         }
@@ -98,16 +90,16 @@ export default function MyBidsLive({
     return () => {
       supabase.removeChannel(channel);
     };
-    // Subscribe once for the slots this page loaded with — a bid placed
-    // after mount on a not-yet-seen slot won't be covered until reload.
+    // Subscribed once for the slots this page loaded with — bidding on a new
+    // slot navigates through a fresh page load anyway.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  if (bids.length === 0) {
+  if (entries.length === 0) {
     return (
-      <p className="mt-8 text-ink-dim">
+      <p className="mt-8 text-crew">
         You haven&apos;t bid on anything yet.{" "}
-        <Link href="/slots" className="text-brass underline">
+        <Link href="/slots" className="text-signal underline">
           Browse open slots
         </Link>
         .
@@ -117,22 +109,30 @@ export default function MyBidsLive({
 
   return (
     <ul className="mt-8 divide-y divide-line border-t border-line">
-      {bids.map((bid) => {
-        const status = bidStatusLabel(bid, highestBySlot);
+      {entries.map((entry) => {
+        const status = entryStatus(entry, userId);
         return (
-          <li key={bid.id}>
+          <li key={entry.slotId}>
             <Link
-              href={`/slots/${bid.slotId}`}
-              className="flex items-center justify-between py-5 transition hover:opacity-80"
+              href={`/slots/${entry.slotId}`}
+              className="flex items-center justify-between gap-4 py-5 transition hover:opacity-80"
             >
               <div>
-                <p className="font-display text-lg">{bid.slotTitle}</p>
-                <p className="mt-1 text-sm text-ink-dim">
-                  Your bid: {formatCents(bid.amountCents)}
+                <p className="font-display text-lg">{entry.slotTitle}</p>
+                <p className="mt-1 text-sm text-crew">
+                  At {formatCents(entry.currentCents ?? entry.floorRateCents)}{" "}
+                  &middot; your max {formatCents(entry.yourMaxCents)}
                 </p>
+                {entry.slotStatus === "open" && (
+                  <p className="mt-1 text-xs uppercase tracking-widest text-crew">
+                    <Countdown closesAt={entry.closesAt} className="tabular-nums" />
+                  </p>
+                )}
               </div>
-              <div className="text-right">
-                <p className={`text-sm font-medium ${status.className}`}>{status.text}</p>
+              <div className="shrink-0 text-right">
+                <p className={`text-sm font-medium ${status.className}`}>
+                  {status.text}
+                </p>
               </div>
             </Link>
           </li>

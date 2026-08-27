@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Role } from "@/lib/types";
+import { ROLES, type Role } from "@/lib/types";
 
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -14,7 +14,7 @@ export async function signUp(formData: FormData) {
   if (!email || !password || !displayName) {
     return { error: "Fill in email, password, and a display name." };
   }
-  if (role !== "videographer" && role !== "bidder") {
+  if (!(ROLES as readonly string[]).includes(role)) {
     return { error: "Choose whether you're a videographer or a bidder." };
   }
   const validatedRole = role as Role;

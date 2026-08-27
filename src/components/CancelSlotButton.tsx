@@ -21,7 +21,7 @@ export default function CancelSlotButton({ slotId }: { slotId: string }) {
     return (
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-ink-dim">Cancel this slot?</span>
+          <span className="text-crew">Cancel this slot?</span>
           <button
             onClick={handleConfirm}
             disabled={pending}
@@ -32,7 +32,7 @@ export default function CancelSlotButton({ slotId }: { slotId: string }) {
           <button
             onClick={() => setConfirming(false)}
             disabled={pending}
-            className="text-ink-dim underline disabled:opacity-60"
+            className="text-crew underline disabled:opacity-60"
           >
             Never mind
           </button>
@@ -45,7 +45,7 @@ export default function CancelSlotButton({ slotId }: { slotId: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-xs text-ink-dim underline transition hover:text-red-400"
+      className="text-xs text-crew underline transition hover:text-red-400"
     >
       Cancel slot
     </button>

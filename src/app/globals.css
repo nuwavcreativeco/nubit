@@ -1,38 +1,118 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens lifted verbatim from nubid.co so the app and the marketing
+ * site speak the same language. The vocabulary is a film set: the stage is
+ * the black ground, racks hold the gear, the key light is white, the crew
+ * stays in the background, and the signal is the one thing that glows.
+ */
 :root {
-  --canvas: #16140f;
-  --canvas-raised: #1f1c15;
-  --ink: #f3ede1;
-  --ink-dim: #b8b0a0;
-  --brass: #c9962b;
-  --brass-dim: #8a6a26;
-  --teal: #3e8e82;
-  --line: #35311f;
+  --stage: 0 0% 0%;
+  --rack: 240 6% 8%;
+  --rack-2: 240 7% 14%;
+  --line: 240 8% 19%;
+  --key: 0 0% 100%;
+  --crew: 214 3% 55%;
+  --signal: 187 100% 50%;
+  --signal-dim: 187 80% 38%;
+  --rec: 0 70% 50%;
 }
 
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-canvas-raised: var(--canvas-raised);
-  --color-ink: var(--ink);
-  --color-ink-dim: var(--ink-dim);
-  --color-brass: var(--brass);
-  --color-brass-dim: var(--brass-dim);
-  --color-teal: var(--teal);
-  --color-line: var(--line);
+  --color-stage: hsl(var(--stage));
+  --color-rack: hsl(var(--rack));
+  --color-rack-2: hsl(var(--rack-2));
+  --color-line: hsl(var(--line));
+  --color-key: hsl(var(--key));
+  --color-crew: hsl(var(--crew));
+  --color-signal: hsl(var(--signal));
+  --color-signal-dim: hsl(var(--signal-dim));
+  --color-rec: hsl(var(--rec));
+
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* nubid.co ships --radius: .25rem but renders every surface square. */
+  --radius-none: 0px;
 }
 
 body {
-  background: var(--canvas);
-  color: var(--ink);
-  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  background: hsl(var(--stage));
+  color: hsl(var(--key));
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 h1,
 h2,
 h3,
 .font-display {
-  font-family: var(--font-display), Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-weight: 700;
+}
+
+/*
+ * Three type roles, matching the site:
+ *   .label — the 10px Inter caps that title a number ("HIGH BID", "LEFT")
+ *   .meta  — the 11px mono caps that carry place and date
+ *   .fig   — Space Grotesk numerals, tight, for money and clocks
+ */
+.label {
+  font-family: var(--font-body), sans-serif;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--crew));
+}
+
+.meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: hsl(var(--crew));
+}
+
+.fig {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The cyan is bright enough that white on it fails contrast — the site's own
+   --accent-foreground is the black ground, so primary buttons take that. */
+.btn-signal {
+  background: hsl(var(--signal));
+  color: hsl(var(--stage));
+  font-weight: 500;
+  transition: background-color 150ms ease;
+}
+.btn-signal:hover {
+  background: hsl(var(--signal-dim));
+}
+
+.btn-ghost {
+  border: 1px solid hsl(var(--line));
+  color: hsl(var(--key));
+  font-weight: 500;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.btn-ghost:hover {
+  border-color: hsl(var(--crew));
+}
+
+/* The live dot next to the wordmark and the SEATTLE eyebrow. */
+.pip {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: hsl(var(--signal));
 }

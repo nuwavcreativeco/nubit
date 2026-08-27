@@ -20,33 +20,33 @@ export default function BidTicker() {
   const isFloor = current === FLOOR_CENTS;
 
   return (
-    <div className="w-full max-w-sm rounded-lg border border-line bg-canvas-raised p-6 shadow-2xl shadow-black/40">
-      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-ink-dim">
-        <span>Half-day shoot &middot; Ballard</span>
-        <span className="text-brass">open</span>
+    <div className="w-full max-w-sm border border-line bg-rack p-6 shadow-2xl shadow-black/40">
+      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-crew">
+        <span>Half-day shoot &middot; Studio</span>
+        <span className="text-signal">open</span>
       </div>
 
       <div className="mt-6 flex items-baseline gap-3">
         <span
           className={`font-display text-5xl tabular-nums transition-colors duration-500 ${
-            isFloor ? "text-brass" : "text-teal"
+            isFloor ? "text-signal" : "text-signal"
           }`}
         >
           {formatCents(current)}
         </span>
-        <span className="text-sm text-ink-dim">
+        <span className="text-sm text-crew">
           {isFloor ? "floor rate" : "current bid"}
         </span>
       </div>
 
-      <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-line">
+      <div className="mt-5 h-1 w-full overflow-hidden bg-line">
         <div
-          className="h-full rounded-full bg-teal transition-all duration-500 ease-out"
+          className="h-full bg-signal transition-all duration-500 ease-out"
           style={{ width: `${(step / (BID_STEPS_CENTS.length - 1)) * 100}%` }}
         />
       </div>
 
-      <p className="mt-4 text-sm text-ink-dim">
+      <p className="mt-4 text-sm text-crew">
         {step + 1 < BID_STEPS_CENTS.length
           ? "Bidding is open — creators are pushing the rate up."
           : "Videographer can award the slot any time."}

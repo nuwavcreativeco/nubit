@@ -1,10 +1,23 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { formatCents } from "@/lib/types";
 
-export async function createSlot(formData: FormData) {
+function toCents(value: FormDataEntryValue | null): number {
+  return Math.round(Number(value ?? 0) * 100);
+}
+
+function toList(value: FormDataEntryValue | null): string[] {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+type CreateResult = { error: string } | { slotId: string };
+
+export async function createSlot(formData: FormData): Promise<CreateResult> {
   const supabase = await createClient();
 
   const {
@@ -12,38 +25,87 @@ export async function createSlot(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Auth flow lands in the next build step — for now this keeps the
-    // action honest about what it needs instead of failing silently.
     return { error: "You need to be signed in to post a slot." };
   }
 
   const title = String(formData.get("title") ?? "").trim();
   const shoot_date = String(formData.get("shoot_date") ?? "");
   const location = String(formData.get("location") ?? "").trim();
-  const floorRateDollars = Number(formData.get("floor_rate") ?? 0);
   const description = String(formData.get("description") ?? "").trim();
+  const starts_at = String(formData.get("starts_at") ?? "10:00");
+  const ends_at = String(formData.get("ends_at") ?? "18:00");
+  const radius_mi = Number(formData.get("radius_mi") ?? 25);
+  // The form converts its datetime-local field to an ISO instant in the
+  // browser, so the close time means what the poster saw, not what the
+  // server's clock thinks.
+  const closes_at = String(formData.get("closes_at_iso") ?? "");
 
-  if (!title || !shoot_date || !location || !(floorRateDollars > 0)) {
-    return { error: "Fill in title, date, location, and a floor rate above $0." };
+  const floor_rate_cents = toCents(formData.get("floor_rate"));
+  const step_cents = toCents(formData.get("step"));
+  const claim_cents = toCents(formData.get("claim"));
+
+  if (!title || !shoot_date || !location) {
+    return { error: "Fill in a title, a shoot date, and a location." };
+  }
+  if (!(floor_rate_cents > 0) || !(step_cents > 0) || !(claim_cents > 0)) {
+    return { error: "Floor, step, and claim price all need to be above $0." };
+  }
+  if (claim_cents <= floor_rate_cents) {
+    return { error: "The claim price has to be above the floor day rate." };
+  }
+  // place_bid() only accepts step-aligned maxes between the floor and the
+  // claim price. If those two aren't themselves on the step, the very first
+  // bid is impossible and the slot sits dead until it expires.
+  if (floor_rate_cents % step_cents !== 0 || claim_cents % step_cents !== 0) {
+    return {
+      error: `Floor and claim price both need to land on the ${formatCents(
+        step_cents
+      )} step.`,
+    };
+  }
+  if (!closes_at || Number.isNaN(Date.parse(closes_at))) {
+    return { error: "Pick when bidding closes." };
+  }
+  if (Date.parse(closes_at) <= Date.now()) {
+    return { error: "Bidding has to close some time in the future." };
+  }
+  if (Date.parse(closes_at) > Date.parse(`${shoot_date}T${starts_at}:00Z`) + 86_400_000) {
+    return { error: "Bidding should close before the shoot, not after it." };
   }
 
-  const { error } = await supabase.from("slots").insert({
-    videographer_id: user.id,
-    title,
-    shoot_date,
-    location,
-    floor_rate_cents: Math.round(floorRateDollars * 100),
-    description: description || null,
-  });
+  // Returns the id so the caller can pin the slot's location straight after,
+  // in the same flow, while the poster is still standing there.
+  const { data: created, error } = await supabase
+    .from("slots")
+    .insert({
+      videographer_id: user.id,
+      title,
+      shoot_date,
+      starts_at,
+      ends_at,
+      location,
+      radius_mi: Number.isFinite(radius_mi) ? radius_mi : 25,
+      floor_rate_cents,
+      step_cents,
+      claim_cents,
+      closes_at,
+      delivers: toList(formData.get("delivers")),
+      gear: toList(formData.get("gear")),
+      description: description || null,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return { error: error.message };
   }
 
-  redirect("/slots");
+  revalidatePath("/slots");
+  revalidatePath("/slots/mine");
+  return { slotId: created.id };
 }
 
-export async function cancelSlot(slotId: string) {
+export async function cancelSlot(slotId: string, reason?: string) {
   const supabase = await createClient();
 
   const {
@@ -54,26 +116,13 @@ export async function cancelSlot(slotId: string) {
     return { error: "You need to be signed in." };
   }
 
-  const { data: slot, error: slotError } = await supabase
-    .from("slots")
-    .select("id, status, videographer_id")
-    .eq("id", slotId)
-    .single();
-
-  if (slotError || !slot) {
-    return { error: "Slot not found." };
-  }
-  if (slot.videographer_id !== user.id) {
-    return { error: "Only the videographer who posted this slot can cancel it." };
-  }
-  if (slot.status !== "open") {
-    return { error: "This slot has already been decided." };
-  }
-
-  const { error } = await supabase
-    .from("slots")
-    .update({ status: "cancelled" })
-    .eq("id", slotId);
+  // A direct status update is refused by the guard_slot_writes trigger
+  // ("use cancel_slot() to cancel"). The RPC does the ownership and status
+  // checks itself and records who cancelled, when, and out of which state.
+  const { error } = await supabase.rpc("cancel_slot", {
+    p_slot: slotId,
+    p_reason: reason || undefined,
+  });
 
   if (error) {
     return { error: error.message };

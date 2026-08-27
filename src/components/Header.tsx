@@ -19,47 +19,49 @@ export default async function Header() {
   }
 
   return (
-    <header className="border-b border-line px-6 py-4">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
-        <Link href="/" className="font-display text-lg">
-          Nubid
+    <header className="sticky top-0 z-50 border-b border-line bg-stage/95 backdrop-blur">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="pip" aria-hidden />
+          <span className="font-display text-xl font-bold tracking-tight">
+            Nu<span className="text-signal">Bid</span>
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-5 text-sm">
-          <Link href="/slots" className="text-ink-dim transition hover:text-ink">
-            Open slots
-          </Link>
-
+        <nav className="flex items-center gap-6 text-sm">
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link href="/slots/mine" className="text-ink-dim transition hover:text-ink">
+            <>
+              <Link href="/slots/mine" className="text-crew transition hover:text-key">
                 My slots
               </Link>
-              <Link href="/bids/mine" className="text-ink-dim transition hover:text-ink">
+              <Link href="/bids/mine" className="text-crew transition hover:text-key">
                 My bids
               </Link>
-              <span className="text-ink-dim">{displayName}</span>
+              <Link href="/slots" className="font-medium text-key transition hover:text-signal">
+                Browse open slots
+              </Link>
+              <span className="hidden meta sm:inline">{displayName}</span>
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="text-ink-dim underline transition hover:text-ink"
+                  className="text-crew transition hover:text-key"
                 >
                   Sign out
                 </button>
               </form>
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-4">
-              <Link href="/auth/sign-in" className="text-ink-dim transition hover:text-ink">
+            <>
+              <Link href="/auth/sign-in" className="text-crew transition hover:text-key">
                 Sign in
               </Link>
               <Link
-                href="/auth/sign-up"
-                className="rounded-md bg-brass px-3 py-1.5 font-medium text-canvas transition hover:bg-brass-dim"
+                href="/slots"
+                className="font-medium text-key transition hover:text-signal"
               >
-                Sign up
+                Browse open slots
               </Link>
-            </div>
+            </>
           )}
         </nav>
       </div>
