@@ -1,0 +1,278 @@
+import type { CompanyData } from '@/lib/domain/types';
+
+const K = 1_000;
+const M = 1_000_000;
+
+// A fictional multi-vertical holding company. Numbers are internally consistent:
+// product revenue rolls up to vertical revenue, and segment purchases roll up to product revenue.
+export const meridian: CompanyData = {
+  meta: {
+    id: 'meridian',
+    name: 'Meridian Holdings',
+    currency: 'USD',
+    asOf: '2026-09-30',
+    source: 'mock',
+    description: 'Mock dataset: a 6-vertical holding company with a planned 7th vertical.',
+  },
+  parent: {
+    id: 'parent',
+    name: 'Meridian Holdings',
+    tagline: 'A connected portfolio of growth businesses',
+    currentYear: 2026,
+    years: [2024, 2025, 2026, 2027, 2028],
+    cash: 1.4 * M,
+    monthlyOpex: 1.31 * M,
+    workingCapitalMonths: 2.1,
+    debt: 2.8 * M,
+    topCustomerShare: 0.04,
+    markets: ['Seattle', 'Tacoma', 'Bellevue', 'Online (US)'],
+  },
+
+  verticals: [
+    {
+      id: 'marketing', name: 'Marketing', hue: 300, icon: 'Megaphone',
+      description: 'Full-service growth agency for local and mid-market businesses.',
+      revenue: { 2024: 3.9 * M, 2025: 4.7 * M, 2026: 5.8 * M }, projectedGrowth: 0.22,
+      grossMargin: 0.58, ebitdaMargin: 0.19, contributionMargin: 0.41,
+      customers: 420, employees: 38, recurringShare: 0.62, cac: 4200, ltv: 38000, retention: 0.82,
+      tam: 18_000 * M, sam: 420 * M, strategicImportance: 9, growthPotential: 8,
+      marketingSpend: 380 * K, requiredInvestment: 600 * K, b2b: true,
+      ops: { leadsPerMonth: 140, leadsNeeded: 190, utilization: 0.91, keyPersonRisk: 0.3, topCustomerShare: 0.06 },
+      expansion: [
+        { market: 'Portland Metro', sizeRatio: 0.6, capture: 0.35, investment: 180 * K, months: 6 },
+        { market: 'Boise', sizeRatio: 0.3, capture: 0.3, investment: 120 * K, months: 6 },
+      ],
+      risks: ['Delivery team near capacity', 'Ad platform policy changes', 'Price pressure from offshore agencies'],
+    },
+    {
+      id: 'software', name: 'Software', hue: 250, icon: 'Cpu',
+      description: 'Vertical SaaS: Pulse CRM, BookIt scheduling, analytics and integrations.',
+      revenue: { 2024: 1.9 * M, 2025: 2.75 * M, 2026: 3.9 * M }, projectedGrowth: 0.38,
+      grossMargin: 0.78, ebitdaMargin: 0.22, contributionMargin: 0.6,
+      customers: 1850, employees: 26, recurringShare: 0.88, cac: 1100, ltv: 9800, retention: 0.87,
+      tam: 12_000 * M, sam: 900 * M, strategicImportance: 10, growthPotential: 10,
+      marketingSpend: 420 * K, requiredInvestment: 1.4 * M, b2b: true,
+      ops: { leadsPerMonth: 610, leadsNeeded: 700, utilization: 0.74, keyPersonRisk: 0.55, topCustomerShare: 0.03 },
+      expansion: [{ market: 'Canada SMB', sizeRatio: 0.45, capture: 0.3, investment: 250 * K, months: 9 }],
+      risks: ['CTO is single point of failure for core platform', 'Billing system technical debt'],
+    },
+    {
+      id: 'media', name: 'Media', hue: 55, icon: 'Radio',
+      description: 'Podcast network, video production, newsletter and a legacy print title.',
+      revenue: { 2024: 2.2 * M, 2025: 2.35 * M, 2026: 2.6 * M }, projectedGrowth: 0.1,
+      grossMargin: 0.46, ebitdaMargin: 0.11, contributionMargin: 0.28,
+      customers: 160, employees: 18, recurringShare: 0.35, cac: 2600, ltv: 21000, retention: 0.71,
+      tam: 3_500 * M, sam: 140 * M, strategicImportance: 7, growthPotential: 6,
+      marketingSpend: 120 * K, requiredInvestment: 300 * K, b2b: true,
+      ops: { leadsPerMonth: 60, leadsNeeded: 55, utilization: 0.68, keyPersonRisk: 0.7, topCustomerShare: 0.22 },
+      risks: ['Flagship show depends on one host', 'Print advertising in structural decline', 'Top sponsor is 22% of revenue'],
+    },
+    {
+      id: 'ecommerce', name: 'E-Commerce', hue: 150, icon: 'ShoppingBag',
+      description: 'Evergreen Goods DTC brand, marketplace channel and a fulfillment service.',
+      revenue: { 2024: 2.9 * M, 2025: 3.15 * M, 2026: 3.4 * M }, projectedGrowth: 0.08,
+      grossMargin: 0.34, ebitdaMargin: 0.06, contributionMargin: 0.14,
+      customers: 21000, employees: 14, recurringShare: 0.18, cac: 38, ltv: 140, retention: 0.41,
+      tam: 25_000 * M, sam: 600 * M, strategicImportance: 5, growthPotential: 5,
+      marketingSpend: 610 * K, requiredInvestment: 450 * K, b2b: false,
+      ops: { leadsPerMonth: 9000, leadsNeeded: 11000, utilization: 0.88, keyPersonRisk: 0.2, topCustomerShare: 0.01 },
+      supplyChain: { name: 'Private-label manufacturing', externalSpend: 1.1 * M, inHouseSavingsRate: 0.22, investment: 650 * K },
+      risks: ['Thin margins exposed to ad-cost inflation', 'Inventory ties up working capital'],
+    },
+    {
+      id: 'consulting', name: 'Consulting', hue: 85, icon: 'Briefcase',
+      description: 'Growth strategy, fractional CMO and M&A advisory for owner-led companies.',
+      revenue: { 2024: 1.3 * M, 2025: 1.6 * M, 2026: 1.9 * M }, projectedGrowth: 0.15,
+      grossMargin: 0.52, ebitdaMargin: 0.24, contributionMargin: 0.45,
+      customers: 48, employees: 9, recurringShare: 0.3, cac: 6500, ltv: 92000, retention: 0.68,
+      tam: 9_000 * M, sam: 210 * M, strategicImportance: 8, growthPotential: 7,
+      marketingSpend: 60 * K, requiredInvestment: 200 * K, b2b: true,
+      ops: { leadsPerMonth: 22, leadsNeeded: 26, utilization: 0.96, keyPersonRisk: 0.85, topCustomerShare: 0.18 },
+      risks: ['Founder delivers most engagements', 'Lumpy project revenue'],
+    },
+    {
+      id: 'realestate', name: 'Real Estate', hue: 25, icon: 'Building2',
+      description: 'Owned commercial building: leased suites plus a coworking & studio floor.',
+      revenue: { 2024: 1.1 * M, 2025: 1.15 * M, 2026: 1.2 * M }, projectedGrowth: 0.04,
+      grossMargin: 0.62, ebitdaMargin: 0.38, contributionMargin: 0.55,
+      customers: 64, employees: 4, recurringShare: 0.92, cac: 900, ltv: 28000, retention: 0.88,
+      tam: 2_000 * M, sam: 40 * M, strategicImportance: 4, growthPotential: 3,
+      marketingSpend: 25 * K, requiredInvestment: 2.5 * M, b2b: true,
+      ops: { leadsPerMonth: 30, leadsNeeded: 15, utilization: 0.94, keyPersonRisk: 0.2, topCustomerShare: 0.21 },
+      risks: ['Mortgage refinancing in 2027', 'Occupancy near ceiling limits growth'],
+    },
+    {
+      id: 'ailabs', name: 'AI Labs', hue: 195, icon: 'Sparkles', launchYear: 2027,
+      description: 'Planned vertical productizing internal AI systems for SMB operators.',
+      revenue: { 2027: 0.4 * M, 2028: 1.3 * M }, projectedGrowth: 0.9,
+      grossMargin: 0.7, ebitdaMargin: 0.05, contributionMargin: 0.4,
+      customers: 60, employees: 6, recurringShare: 0.8, cac: 3000, ltv: 30000, retention: 0.85,
+      tam: 30_000 * M, sam: 300 * M, strategicImportance: 9, growthPotential: 10,
+      marketingSpend: 80 * K, requiredInvestment: 900 * K, b2b: true,
+      ops: { leadsPerMonth: 20, leadsNeeded: 30, utilization: 0.5, keyPersonRisk: 0.6, topCustomerShare: 0.1 },
+      risks: ['Unproven product-market fit', 'Model costs are volatile'],
+    },
+  ],
+
+  products: [
+    // Marketing
+    { id: 'mkt-seo', vertical: 'marketing', name: 'SEO', revenue: { 2024: 0.9 * M, 2025: 1.08 * M, 2026: 1.3 * M }, atv: 1500, margin: 0.62, customers: 160, growth: 0.2, repeatRate: 0.85, attachRate: 0.38, recurring: true, capabilities: ['acquisition', 'content'], upsell: { to: 'SEO + Local Authority Pro', priceUplift: 6000, rate: 0.2 } },
+    { id: 'mkt-ads', vertical: 'marketing', name: 'Paid Ads', revenue: { 2024: 1.1 * M, 2025: 1.3 * M, 2026: 1.6 * M }, atv: 2200, margin: 0.55, customers: 140, growth: 0.23, repeatRate: 0.8, attachRate: 0.33, recurring: true, capabilities: ['acquisition'], upsell: { to: 'Ads + CRO Retainer', priceUplift: 7200, rate: 0.18 } },
+    { id: 'mkt-social', vertical: 'marketing', name: 'Social Media', revenue: { 2024: 0.8 * M, 2025: 0.95 * M, 2026: 1.1 * M }, atv: 1200, margin: 0.5, customers: 120, growth: 0.16, repeatRate: 0.75, attachRate: 0.29, recurring: true, capabilities: ['content', 'brand'] },
+    { id: 'mkt-web', vertical: 'marketing', name: 'Websites', revenue: { 2024: 0.8 * M, 2025: 0.95 * M, 2026: 1.2 * M }, atv: 9500, margin: 0.6, customers: 126, growth: 0.26, repeatRate: 0.2, attachRate: 0.3, recurring: false, capabilities: ['acquisition', 'brand', 'platform'] },
+    { id: 'mkt-crm', vertical: 'marketing', name: 'CRM & Automation', revenue: { 2024: 0.3 * M, 2025: 0.42 * M, 2026: 0.6 * M }, atv: 4800, margin: 0.63, customers: 110, growth: 0.43, repeatRate: 0.3, attachRate: 0.26, recurring: false, capabilities: ['acquisition', 'retention', 'platform'] },
+    // Software
+    { id: 'sw-crm', vertical: 'software', name: 'Pulse CRM', revenue: { 2024: 1.1 * M, 2025: 1.5 * M, 2026: 2.1 * M }, atv: 1188, margin: 0.82, customers: 1400, growth: 0.4, repeatRate: 0.9, attachRate: 0.76, recurring: true, capabilities: ['retention', 'platform', 'acquisition'], upsell: { to: 'Pulse CRM Pro (AI)', priceUplift: 960, rate: 0.22 } },
+    { id: 'sw-book', vertical: 'software', name: 'BookIt Scheduling', revenue: { 2024: 0.45 * M, 2025: 0.65 * M, 2026: 0.9 * M }, atv: 588, margin: 0.8, customers: 1300, growth: 0.38, repeatRate: 0.88, attachRate: 0.7, recurring: true, capabilities: ['operations', 'retention'] },
+    { id: 'sw-analytics', vertical: 'software', name: 'Signal Analytics', revenue: { 2024: 0.25 * M, 2025: 0.4 * M, 2026: 0.6 * M }, atv: 1800, margin: 0.74, customers: 330, growth: 0.5, repeatRate: 0.85, attachRate: 0.18, recurring: true, capabilities: ['data', 'acquisition'] },
+    { id: 'sw-api', vertical: 'software', name: 'Integrations API', revenue: { 2024: 0.1 * M, 2025: 0.2 * M, 2026: 0.3 * M }, atv: 2400, margin: 0.7, customers: 125, growth: 0.5, repeatRate: 0.8, attachRate: 0.07, recurring: true, capabilities: ['platform', 'data'] },
+    // Media
+    { id: 'med-pod', vertical: 'media', name: 'Podcast Network', revenue: { 2024: 0.7 * M, 2025: 0.8 * M, 2026: 0.9 * M }, atv: 6500, margin: 0.5, customers: 70, growth: 0.12, repeatRate: 0.6, attachRate: 0.44, recurring: false, capabilities: ['audience', 'brand'] },
+    { id: 'med-video', vertical: 'media', name: 'Video Production', revenue: { 2024: 0.6 * M, 2025: 0.65 * M, 2026: 0.8 * M }, atv: 8500, margin: 0.42, customers: 64, growth: 0.23, repeatRate: 0.45, attachRate: 0.4, recurring: false, capabilities: ['content', 'brand'] },
+    { id: 'med-news', vertical: 'media', name: 'Newsletter', revenue: { 2024: 0.3 * M, 2025: 0.4 * M, 2026: 0.5 * M }, atv: 3200, margin: 0.7, customers: 90, growth: 0.25, repeatRate: 0.7, attachRate: 0.56, recurring: false, capabilities: ['audience', 'acquisition'] },
+    { id: 'med-print', vertical: 'media', name: 'Print Magazine', revenue: { 2024: 0.6 * M, 2025: 0.5 * M, 2026: 0.4 * M }, atv: 2500, margin: 0.18, customers: 85, growth: -0.2, repeatRate: 0.5, attachRate: 0.5, recurring: false, capabilities: ['audience', 'brand'], sunsetYear: 2027 },
+    // E-Commerce
+    { id: 'ec-dtc', vertical: 'ecommerce', name: 'Evergreen DTC Store', revenue: { 2024: 2.0 * M, 2025: 2.1 * M, 2026: 2.2 * M }, atv: 72, margin: 0.38, customers: 16500, growth: 0.05, repeatRate: 0.32, attachRate: 0.78, recurring: false, capabilities: ['commerce'] },
+    { id: 'ec-market', vertical: 'ecommerce', name: 'Marketplace Channel', revenue: { 2024: 0.7 * M, 2025: 0.75 * M, 2026: 0.8 * M }, atv: 48, margin: 0.22, customers: 9000, growth: 0.07, repeatRate: 0.2, attachRate: 0.4, recurring: false, capabilities: ['commerce', 'distribution'] },
+    { id: 'ec-3pl', vertical: 'ecommerce', name: 'Fulfillment-as-a-Service', revenue: { 2024: 0.2 * M, 2025: 0.3 * M, 2026: 0.4 * M }, atv: 2200, margin: 0.3, customers: 15, growth: 0.33, repeatRate: 0.9, attachRate: 0.01, recurring: true, capabilities: ['distribution', 'operations', 'commerce'] },
+    // Consulting
+    { id: 'con-growth', vertical: 'consulting', name: 'Growth Strategy', revenue: { 2024: 0.6 * M, 2025: 0.75 * M, 2026: 0.9 * M }, atv: 18000, margin: 0.55, customers: 32, growth: 0.2, repeatRate: 0.35, attachRate: 0.66, recurring: false, capabilities: ['strategy', 'acquisition'], upsell: { to: 'Strategy + Implementation Retainer', priceUplift: 24000, rate: 0.25 } },
+    { id: 'con-cmo', vertical: 'consulting', name: 'Fractional CMO', revenue: { 2024: 0.5 * M, 2025: 0.6 * M, 2026: 0.7 * M }, atv: 6500, margin: 0.5, customers: 9, growth: 0.17, repeatRate: 0.9, attachRate: 0.19, recurring: true, capabilities: ['strategy', 'brand'] },
+    { id: 'con-ma', vertical: 'consulting', name: 'M&A Advisory', revenue: { 2024: 0.2 * M, 2025: 0.25 * M, 2026: 0.3 * M }, atv: 60000, margin: 0.6, customers: 5, growth: 0.2, repeatRate: 0.1, attachRate: 0.1, recurring: false, capabilities: ['strategy', 'finance'] },
+    // Real Estate
+    { id: 're-lease', vertical: 'realestate', name: 'Commercial Leasing', revenue: { 2024: 0.82 * M, 2025: 0.83 * M, 2026: 0.8 * M }, atv: 1100, margin: 0.64, customers: 22, growth: -0.03, repeatRate: 0.9, attachRate: 0.34, recurring: true, capabilities: ['property'] },
+    { id: 're-cowork', vertical: 'realestate', name: 'Coworking & Studio', revenue: { 2024: 0.28 * M, 2025: 0.32 * M, 2026: 0.4 * M }, atv: 350, margin: 0.58, customers: 42, growth: 0.25, repeatRate: 0.85, attachRate: 0.66, recurring: true, capabilities: ['property', 'operations'] },
+    // AI Labs (planned)
+    { id: 'ai-agents', vertical: 'ailabs', name: 'AI Agents for SMBs', launchYear: 2027, revenue: { 2027: 0.25 * M, 2028: 0.8 * M }, atv: 6000, margin: 0.72, customers: 40, growth: 1.5, repeatRate: 0.85, attachRate: 0.6, recurring: true, capabilities: ['operations', 'platform', 'data'] },
+    { id: 'ai-intel', vertical: 'ailabs', name: 'Market Intelligence', launchYear: 2027, revenue: { 2027: 0.15 * M, 2028: 0.5 * M }, atv: 5000, margin: 0.78, customers: 30, growth: 1.2, repeatRate: 0.8, attachRate: 0.4, recurring: true, capabilities: ['data', 'strategy'] },
+  ],
+
+  segments: [
+    {
+      id: 'seg-local', name: 'Local Service SMBs', b2b: true,
+      description: 'Contractors, clinics, salons and home services in the Puget Sound region.',
+      customers: 1650, revenue: 7.1 * M, retention: 0.82, crossSellPotential: 0.75,
+      purchases: [
+        { product: 'mkt-seo', revenue: 1.0 * M }, { product: 'mkt-ads', revenue: 1.1 * M }, { product: 'mkt-web', revenue: 0.7 * M },
+        { product: 'mkt-crm', revenue: 0.4 * M }, { product: 'mkt-social', revenue: 0.5 * M }, { product: 'sw-crm', revenue: 1.6 * M },
+        { product: 'sw-book', revenue: 0.85 * M }, { product: 'sw-analytics', revenue: 0.25 * M }, { product: 're-cowork', revenue: 0.1 * M },
+        { product: 'med-news', revenue: 0.2 * M }, { product: 'con-growth', revenue: 0.4 * M },
+      ],
+    },
+    {
+      id: 'seg-dtc', name: 'DTC & E-com Brands', b2b: true,
+      description: 'Consumer brands doing $1–20M online.',
+      customers: 210, revenue: 2.4 * M, retention: 0.74, crossSellPotential: 0.65,
+      purchases: [
+        { product: 'mkt-ads', revenue: 0.4 * M }, { product: 'mkt-social', revenue: 0.4 * M }, { product: 'mkt-web', revenue: 0.3 * M },
+        { product: 'sw-analytics', revenue: 0.25 * M }, { product: 'ec-3pl', revenue: 0.4 * M }, { product: 'med-pod', revenue: 0.3 * M },
+        { product: 'con-growth', revenue: 0.2 * M }, { product: 'sw-api', revenue: 0.15 * M },
+      ],
+    },
+    {
+      id: 'seg-mid', name: 'Mid-Market B2B', b2b: true,
+      description: 'B2B companies with $10–100M revenue and in-house marketing teams.',
+      customers: 140, revenue: 4.15 * M, retention: 0.79, crossSellPotential: 0.6,
+      purchases: [
+        { product: 'mkt-seo', revenue: 0.3 * M }, { product: 'mkt-crm', revenue: 0.2 * M }, { product: 'mkt-social', revenue: 0.2 * M },
+        { product: 'mkt-web', revenue: 0.2 * M }, { product: 'mkt-ads', revenue: 0.1 * M }, { product: 'sw-crm', revenue: 0.5 * M },
+        { product: 'sw-api', revenue: 0.15 * M }, { product: 'sw-analytics', revenue: 0.1 * M }, { product: 'con-cmo', revenue: 0.7 * M },
+        { product: 'con-growth', revenue: 0.3 * M }, { product: 'con-ma', revenue: 0.3 * M }, { product: 'med-video', revenue: 0.5 * M },
+        { product: 'med-pod', revenue: 0.4 * M }, { product: 'med-news', revenue: 0.2 * M },
+      ],
+    },
+    {
+      id: 'seg-consumer', name: 'Consumers', b2b: false,
+      description: 'Shoppers of the Evergreen brand, largely reached through Meridian media.',
+      customers: 21000, revenue: 3.0 * M, retention: 0.41, crossSellPotential: 0.25,
+      purchases: [{ product: 'ec-dtc', revenue: 2.2 * M }, { product: 'ec-market', revenue: 0.8 * M }],
+    },
+    {
+      id: 'seg-advertisers', name: 'Advertisers & Sponsors', b2b: true,
+      description: 'Brands buying sponsorships and ad inventory.',
+      customers: 130, revenue: 1.0 * M, retention: 0.66, crossSellPotential: 0.55,
+      purchases: [
+        { product: 'med-pod', revenue: 0.2 * M }, { product: 'med-print', revenue: 0.4 * M },
+        { product: 'med-news', revenue: 0.1 * M }, { product: 'med-video', revenue: 0.3 * M },
+      ],
+    },
+    {
+      id: 'seg-tenants', name: 'Tenants & Members', b2b: true,
+      description: 'Businesses leasing suites or coworking memberships.',
+      customers: 64, revenue: 1.15 * M, retention: 0.88, crossSellPotential: 0.5,
+      purchases: [{ product: 're-lease', revenue: 0.8 * M }, { product: 're-cowork', revenue: 0.3 * M }, { product: 'sw-book', revenue: 0.05 * M }],
+    },
+  ],
+
+  infra: [
+    { id: 'inf-crm', name: 'Pulse CRM Core', category: 'crm', annualCost: 180 * K, techDebt: 0.25, dependents: ['marketing', 'software', 'consulting', 'media', 'ailabs'] },
+    { id: 'inf-web', name: 'Web & CMS Stack', category: 'web', annualCost: 95 * K, techDebt: 0.55, dependents: ['marketing', 'media', 'ecommerce', 'software'], externalizable: { offer: 'Managed Web Hosting & Care Plans', customers: 300, price: 1200, confidence: 0.7, investment: 60 * K } },
+    { id: 'inf-dw', name: 'Data Warehouse', category: 'data', annualCost: 140 * K, techDebt: 0.35, dependents: ['software', 'marketing', 'ecommerce', 'media', 'consulting', 'ailabs'], dataRecords: 4_200_000 },
+    { id: 'inf-ai', name: 'AI Systems', category: 'ai', annualCost: 160 * K, techDebt: 0.2, dependents: ['software', 'marketing', 'media', 'consulting', 'ailabs'], externalizable: { offer: 'White-label AI Content Engine', customers: 120, price: 4800, confidence: 0.55, investment: 220 * K } },
+    { id: 'inf-pay', name: 'Payments & Billing', category: 'payments', annualCost: 70 * K, techDebt: 0.78, dependents: ['software', 'ecommerce', 'marketing', 'realestate'] },
+    { id: 'inf-wh', name: 'Fulfillment Warehouse', category: 'distribution', annualCost: 310 * K, techDebt: 0.4, dependents: ['ecommerce'], externalizable: { offer: 'Regional 3PL for Brands', customers: 40, price: 26000, confidence: 0.6, investment: 350 * K } },
+    { id: 'inf-hq', name: 'Studio & HQ Campus', category: 'location', annualCost: 220 * K, techDebt: 0.3, dependents: ['media', 'realestate', 'marketing', 'consulting'] },
+  ],
+
+  functions: [
+    { id: 'fn-sales', name: 'Shared Sales Team', fte: 7, annualCost: 720 * K, serves: ['marketing', 'software', 'consulting'], utilization: 0.93, keyPersonRisk: 0.3 },
+    { id: 'fn-creative', name: 'Creative Studio', fte: 11, annualCost: 980 * K, serves: ['marketing', 'media', 'ecommerce'], utilization: 0.89, keyPersonRisk: 0.4 },
+    { id: 'fn-finops', name: 'Finance & Ops', fte: 5, annualCost: 520 * K, serves: ['marketing', 'software', 'media', 'ecommerce', 'consulting', 'realestate'], utilization: 0.78, keyPersonRisk: 0.65 },
+  ],
+
+  pairs: [
+    { a: 'marketing', b: 'software', sharedCustomers: 260, eligibleAtoB: 420, eligibleBtoA: 900, currentCrossSellRate: 0.14, targetCrossSellRate: 0.32, crossSellRevenue: 820 * K, sharedInfra: ['inf-crm', 'inf-dw', 'inf-ai'], sharedEmployeesFTE: 4, sharedTech: 0.9, sharedMarketing: 0.8, dataSharing: 0.85, distributionOverlap: 0.6, dependency: { from: 'marketing', to: 'software', note: 'Agency delivery runs on Pulse CRM' }, revenueFlow: { from: 'marketing', to: 'software', amount: 410 * K, note: 'Agency clients onboarded to Pulse CRM subscriptions' } },
+    { a: 'marketing', b: 'media', sharedCustomers: 70, eligibleAtoB: 300, eligibleBtoA: 140, currentCrossSellRate: 0.08, targetCrossSellRate: 0.2, crossSellRevenue: 240 * K, sharedInfra: ['inf-hq', 'inf-ai'], sharedEmployeesFTE: 5, sharedTech: 0.5, sharedMarketing: 0.9, dataSharing: 0.5, distributionOverlap: 0.7, revenueFlow: { from: 'media', to: 'marketing', amount: 180 * K, note: 'Podcast & newsletter audience generates agency leads' } },
+    { a: 'marketing', b: 'consulting', sharedCustomers: 34, eligibleAtoB: 120, eligibleBtoA: 48, currentCrossSellRate: 0.1, targetCrossSellRate: 0.25, crossSellRevenue: 310 * K, sharedInfra: ['inf-crm'], sharedEmployeesFTE: 2, sharedTech: 0.4, sharedMarketing: 0.7, dataSharing: 0.6, distributionOverlap: 0.5, revenueFlow: { from: 'consulting', to: 'marketing', amount: 260 * K, note: 'Strategy engagements convert into execution retainers' } },
+    { a: 'marketing', b: 'ecommerce', sharedCustomers: 12, eligibleAtoB: 60, eligibleBtoA: 15, currentCrossSellRate: 0.05, targetCrossSellRate: 0.2, crossSellRevenue: 60 * K, sharedInfra: ['inf-web', 'inf-dw'], sharedEmployeesFTE: 3, sharedTech: 0.5, sharedMarketing: 0.6, dataSharing: 0.7, distributionOverlap: 0.3, dependency: { from: 'ecommerce', to: 'marketing', note: 'Store growth depends on the in-house agency running ads' } },
+    { a: 'software', b: 'ecommerce', sharedCustomers: 10, eligibleAtoB: 150, eligibleBtoA: 15, currentCrossSellRate: 0.03, targetCrossSellRate: 0.12, crossSellRevenue: 30 * K, sharedInfra: ['inf-pay', 'inf-dw', 'inf-web'], sharedEmployeesFTE: 1, sharedTech: 0.7, sharedMarketing: 0.2, dataSharing: 0.6, distributionOverlap: 0.4 },
+    { a: 'software', b: 'consulting', sharedCustomers: 30, eligibleAtoB: 200, eligibleBtoA: 48, currentCrossSellRate: 0.06, targetCrossSellRate: 0.18, crossSellRevenue: 90 * K, sharedInfra: ['inf-crm', 'inf-dw'], sharedEmployeesFTE: 1, sharedTech: 0.5, sharedMarketing: 0.4, dataSharing: 0.5, distributionOverlap: 0.3 },
+    { a: 'software', b: 'media', sharedCustomers: 25, eligibleAtoB: 600, eligibleBtoA: 160, currentCrossSellRate: 0.02, targetCrossSellRate: 0.08, crossSellRevenue: 45 * K, sharedInfra: ['inf-ai', 'inf-dw'], sharedEmployeesFTE: 1, sharedTech: 0.6, sharedMarketing: 0.5, dataSharing: 0.4, distributionOverlap: 0.5 },
+    { a: 'software', b: 'realestate', sharedCustomers: 18, eligibleAtoB: 40, eligibleBtoA: 64, currentCrossSellRate: 0.25, targetCrossSellRate: 0.5, crossSellRevenue: 25 * K, sharedInfra: ['inf-pay'], sharedEmployeesFTE: 0, sharedTech: 0.4, sharedMarketing: 0.1, dataSharing: 0.2, distributionOverlap: 0.1, dependency: { from: 'realestate', to: 'software', note: 'Tenant and studio booking runs on BookIt' } },
+    { a: 'media', b: 'ecommerce', sharedCustomers: 8, eligibleAtoB: 0, eligibleBtoA: 0, currentCrossSellRate: 0, targetCrossSellRate: 0, crossSellRevenue: 0, sharedInfra: ['inf-web'], sharedEmployeesFTE: 2, sharedTech: 0.3, sharedMarketing: 0.8, dataSharing: 0.5, distributionOverlap: 0.9, partnership: 'Creator affiliate program', revenueFlow: { from: 'media', to: 'ecommerce', amount: 340 * K, note: 'Podcast & newsletter audience drives DTC store sales' } },
+    { a: 'media', b: 'consulting', sharedCustomers: 12, eligibleAtoB: 40, eligibleBtoA: 48, currentCrossSellRate: 0.1, targetCrossSellRate: 0.2, crossSellRevenue: 50 * K, sharedInfra: ['inf-hq'], sharedEmployeesFTE: 1, sharedTech: 0.1, sharedMarketing: 0.7, dataSharing: 0.3, distributionOverlap: 0.6, revenueFlow: { from: 'media', to: 'consulting', amount: 120 * K, note: 'Thought-leadership content sources consulting deals' } },
+    { a: 'marketing', b: 'realestate', sharedCustomers: 14, eligibleAtoB: 40, eligibleBtoA: 64, currentCrossSellRate: 0.2, targetCrossSellRate: 0.35, crossSellRevenue: 40 * K, sharedInfra: ['inf-hq'], sharedEmployeesFTE: 0, sharedTech: 0.1, sharedMarketing: 0.3, dataSharing: 0.1, distributionOverlap: 0.3, partnership: 'Tenants receive agency onboarding credit' },
+    { a: 'media', b: 'realestate', sharedCustomers: 6, eligibleAtoB: 20, eligibleBtoA: 30, currentCrossSellRate: 0.1, targetCrossSellRate: 0.25, crossSellRevenue: 15 * K, sharedInfra: ['inf-hq'], sharedEmployeesFTE: 0, sharedTech: 0.1, sharedMarketing: 0.2, dataSharing: 0.1, distributionOverlap: 0.4 },
+    { a: 'consulting', b: 'realestate', sharedCustomers: 3, eligibleAtoB: 10, eligibleBtoA: 10, currentCrossSellRate: 0.1, targetCrossSellRate: 0.2, crossSellRevenue: 10 * K, sharedInfra: ['inf-hq'], sharedEmployeesFTE: 0, sharedTech: 0, sharedMarketing: 0.2, dataSharing: 0.1, distributionOverlap: 0.2 },
+    { a: 'software', b: 'ailabs', sharedCustomers: 0, eligibleAtoB: 1850, eligibleBtoA: 0, currentCrossSellRate: 0, targetCrossSellRate: 0.04, crossSellRevenue: 0, sharedInfra: ['inf-ai', 'inf-dw', 'inf-crm'], sharedEmployeesFTE: 3, sharedTech: 1, sharedMarketing: 0.6, dataSharing: 0.9, distributionOverlap: 0.6, dependency: { from: 'ailabs', to: 'software', note: 'AI agents ship inside Pulse CRM' } },
+    { a: 'marketing', b: 'ailabs', sharedCustomers: 0, eligibleAtoB: 420, eligibleBtoA: 0, currentCrossSellRate: 0, targetCrossSellRate: 0.06, crossSellRevenue: 0, sharedInfra: ['inf-ai'], sharedEmployeesFTE: 1, sharedTech: 0.7, sharedMarketing: 0.5, dataSharing: 0.7, distributionOverlap: 0.5 },
+  ],
+
+  affinities: [
+    { a: 'mkt-seo', b: 'mkt-ads', affinity: 0.85, currentBoth: 70 },
+    { a: 'mkt-ads', b: 'mkt-web', affinity: 0.8, currentBoth: 60 },
+    { a: 'mkt-seo', b: 'mkt-web', affinity: 0.82, currentBoth: 75 },
+    { a: 'mkt-web', b: 'sw-crm', affinity: 0.78, currentBoth: 85 },
+    { a: 'mkt-ads', b: 'sw-crm', affinity: 0.75, currentBoth: 70 },
+    { a: 'mkt-crm', b: 'sw-crm', affinity: 0.92, currentBoth: 95 },
+    { a: 'mkt-ads', b: 'sw-analytics', affinity: 0.7, currentBoth: 40 },
+    { a: 'sw-crm', b: 'sw-book', affinity: 0.88, currentBoth: 900 },
+    { a: 'mkt-social', b: 'med-video', affinity: 0.74, currentBoth: 25 },
+    { a: 'med-news', b: 'mkt-seo', affinity: 0.5, currentBoth: 10 },
+    { a: 'con-growth', b: 'mkt-ads', affinity: 0.72, currentBoth: 14 },
+    { a: 'con-growth', b: 'mkt-seo', affinity: 0.68, currentBoth: 12 },
+    { a: 'con-cmo', b: 'mkt-social', affinity: 0.65, currentBoth: 6 },
+    { a: 'con-cmo', b: 'sw-analytics', affinity: 0.6, currentBoth: 4 },
+    { a: 'ec-3pl', b: 'mkt-ads', affinity: 0.62, currentBoth: 9 },
+    { a: 'ec-3pl', b: 'sw-analytics', affinity: 0.5, currentBoth: 5 },
+    { a: 're-cowork', b: 'sw-book', affinity: 0.55, currentBoth: 30 },
+    { a: 're-cowork', b: 'mkt-web', affinity: 0.45, currentBoth: 10 },
+    { a: 'med-pod', b: 'med-video', affinity: 0.7, currentBoth: 25 },
+    { a: 'med-pod', b: 'med-news', affinity: 0.75, currentBoth: 35 },
+    { a: 'mkt-social', b: 'mkt-ads', affinity: 0.66, currentBoth: 48 },
+  ],
+
+  journeys: [
+    { id: 'j-smb', name: 'Website → CRM subscription → Ads retainer', steps: ['seg-local', 'mkt-web', 'marketing', 'software', 'sw-crm', 'parent'], customers: 85, revenue: 410 * K },
+    { id: 'j-audience', name: 'Podcast audience → DTC store', steps: ['seg-consumer', 'med-pod', 'media', 'ecommerce', 'ec-dtc', 'parent'], customers: 4800, revenue: 340 * K },
+    { id: 'j-strategy', name: 'Strategy → Execution → Analytics', steps: ['seg-mid', 'con-growth', 'consulting', 'marketing', 'mkt-ads', 'software', 'sw-analytics'], customers: 14, revenue: 260 * K },
+    { id: 'j-rollup', name: 'Core SaaS revenue roll-up', steps: ['seg-local', 'sw-crm', 'software', 'parent'], customers: 1400, revenue: 1.6 * M },
+    { id: 'j-tenant', name: 'Tenant → Booking software', steps: ['seg-tenants', 're-cowork', 'realestate', 'software', 'sw-book'], customers: 30, revenue: 25 * K },
+  ],
+
+  relations: [
+    { id: 'r-ai-crm', source: 'ai-agents', target: 'sw-crm', type: 'dependency', strength: 0.8, label: 'Ships inside CRM' },
+    { id: 'r-3pl-dtc', source: 'ec-3pl', target: 'ec-dtc', type: 'shared_distribution', strength: 0.7, label: 'Same warehouse' },
+    { id: 'r-news-ads', source: 'med-news', target: 'mkt-ads', type: 'cross_sell', strength: 0.5, label: 'Lead magnet' },
+  ],
+};
