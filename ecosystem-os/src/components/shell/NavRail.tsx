@@ -27,16 +27,16 @@ export function NavRail() {
   const critical = a?.bottlenecks.filter((b) => b.severity >= 0.75).length ?? 0;
 
   return (
-    <nav className="flex min-h-0 flex-col border-r border-line bg-panel">
-      <div className="flex-1 overflow-y-auto py-2">
+    <nav className="flex min-h-0 shrink-0 flex-col border-b border-line bg-panel md:border-b-0 md:border-r">
+      <div className="flex overflow-x-auto [scrollbar-width:none] md:block md:flex-1 md:overflow-y-auto md:py-2 [&::-webkit-scrollbar]:hidden">
         {NAV.map((n) => (
-          <div key={n.id}>
-            {n.group && <div className="label px-4 pb-1 pt-3 !text-[9px] !text-dim">{n.group}</div>}
+          <div key={n.id} className="shrink-0">
+            {n.group && <div className="label hidden px-4 pb-1 pt-3 !text-[9px] !text-dim md:block">{n.group}</div>}
             <button
               onClick={() => setView(n.id)}
-              className={`relative flex w-full items-center gap-2.5 px-4 py-[7px] text-left text-[12.5px] transition ${view === n.id ? 'bg-panel-3 text-fg' : 'text-fg-2 hover:bg-panel-2 hover:text-fg'}`}
+              className={`relative flex w-full items-center gap-2 whitespace-nowrap px-3 py-2.5 text-left text-[12.5px] transition md:gap-2.5 md:px-4 md:py-[7px] ${view === n.id ? 'bg-panel-3 text-fg' : 'text-fg-2 hover:bg-panel-2 hover:text-fg'}`}
             >
-              {view === n.id && <span className="absolute inset-y-1 left-0 w-[2px] bg-accent" />}
+              {view === n.id && <span className="absolute inset-x-1 bottom-0 h-[2px] bg-accent md:inset-x-auto md:inset-y-1 md:bottom-auto md:left-0 md:h-auto md:w-[2px]" />}
               <n.icon className="size-3.5 shrink-0" strokeWidth={1.7} />
               <span className="flex-1">{n.label}</span>
               {n.id === 'risk' && critical > 0 && <span className="num text-[10px]" style={{ color: 'var(--critical)' }}>{critical}</span>}
@@ -45,7 +45,7 @@ export function NavRail() {
           </div>
         ))}
       </div>
-      <div className="space-y-1 border-t border-line px-4 py-3 text-[10px] text-muted">
+      <div className="hidden space-y-1 border-t border-line px-4 py-3 text-[10px] text-muted md:block">
         <div className="flex items-center gap-1.5"><Gauge className="size-3" /> Health <span className="num ml-auto text-fg-2">{a?.health.score ?? '—'}</span></div>
         <div className="flex items-center justify-between"><span>Storage</span><span className="num text-fg-2">{system?.storage ?? '…'}</span></div>
         <div className="flex items-center justify-between"><span>Analyst</span><span className="num text-fg-2">{system?.ai === 'claude' ? 'Claude' : 'Deterministic'}</span></div>

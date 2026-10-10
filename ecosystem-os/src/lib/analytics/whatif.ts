@@ -81,13 +81,20 @@ export function investmentAllocation(data: CompanyData, amount: number) {
       const util = v.v.ops.utilization;
       // Teams (or buildings) past ~85% utilization can't absorb new demand without hiring or capex.
       const capacityFactor = util <= 0.85 ? 1 : clamp(1 - (util - 0.85) / 0.12, 0.1, 1);
-      const newCustomers = (amount * 0.7) / Math.max(1, v.v.cac);
-      const firstYearRevenue = newCustomers * v.arpc * 0.6 * capacityFactor;
-      const valueCreated = newCustomers * v.v.ltv * v.v.grossMargin * capacityFactor;
+      const bought = (amount * 0.7) / Math.max(1, v.v.cac);
+      // Customers the current team can take on before hitting ~85% utilization (at least ~5% via overtime
+      // and slack); beyond that needs hiring.
+      const headroom = util > 0 ? v.customers * Math.max(0.05, 0.85 / util - 1) : Infinity;
+      const served = Math.min(bought * capacityFactor, headroom);
+      const capped = served < bought * capacityFactor;
+      const firstYearRevenue = served * v.arpc * 0.6;
+      const valueCreated = served * v.v.ltv * v.v.grossMargin;
       return {
-        vertical: v.id, name: v.v.name, newCustomers: Math.round(newCustomers * capacityFactor), firstYearRevenue, valueCreated,
+        vertical: v.id, name: v.v.name, newCustomers: Math.round(served), firstYearRevenue, valueCreated,
         roi: valueCreated / amount, capacityFactor, ltvCac: v.v.ltv / Math.max(1, v.v.cac),
-        constraint: capacityFactor < 1 ? `Capacity at ${(util * 100).toFixed(0)}% — only ${(capacityFactor * 100).toFixed(0)}% of new demand can be served without hiring or capex` : null,
+        constraint: capped
+          ? `The spend would win ~${Math.round(bought)} customers, but at ${(util * 100).toFixed(0)}% utilization the current team can serve only ~${Math.max(1, Math.round(headroom))} more without hiring`
+          : capacityFactor < 1 ? `Capacity at ${(util * 100).toFixed(0)}% — only ${(capacityFactor * 100).toFixed(0)}% of new demand can be served without hiring or capex` : null,
       };
     })
     .sort((x, y) => y.valueCreated - x.valueCreated);

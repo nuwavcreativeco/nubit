@@ -65,12 +65,12 @@ export function SettingsView() {
         </div>
       )}
 
-      <div className="grid grid-cols-[1.3fr_1fr] gap-4">
+      <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr] [&>*]:min-w-0">
         <div className="space-y-4">
           <Panel title="Current dataset" right={<span className="num text-[10px] text-muted">{s.data.meta.source} · as of {s.data.meta.asOf}</span>}>
             <div className="mb-3 text-[13px] text-fg">{s.data.meta.name}</div>
             {s.data.meta.description && <p className="mb-3 text-[12px] text-muted">{s.data.meta.description}</p>}
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {Object.entries(counts).map(([k, v]) => <div key={k} className="border border-line px-2.5 py-2"><div className="label !text-[9px]">{k}</div><div className="num text-[16px] text-fg">{v}</div></div>)}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export function SettingsView() {
           </Panel>
 
           <Panel title="Import">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <div className="mb-1 text-[12px] text-fg">Full JSON snapshot</div>
                 <p className="mb-2 text-[11px] text-muted">Replaces the open company. Validated against the schema, including referential integrity.</p>
@@ -104,6 +104,7 @@ export function SettingsView() {
           </Panel>
 
           <Panel title="Integrations">
+            <div className="overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead><tr className="text-left"><th className="label pb-2 font-normal">Source</th><th className="label pb-2 font-normal">Fills</th><th className="label pb-2 font-normal">Status</th></tr></thead>
               <tbody>
@@ -116,6 +117,7 @@ export function SettingsView() {
                 ))}
               </tbody>
             </table>
+            </div>
           </Panel>
         </div>
 

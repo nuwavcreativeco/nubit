@@ -31,7 +31,7 @@ export function ViewPanel() {
   }
 
   return (
-    <aside className={`flex shrink-0 flex-col border-r border-line bg-panel transition-[width] ${wide ? 'w-[620px]' : view === 'analyst' ? 'w-[440px]' : 'w-[380px]'}`}>
+    <aside className={`flex w-full shrink-0 flex-col border-r border-line bg-panel transition-[width] ${wide ? 'md:w-[620px]' : view === 'analyst' ? 'md:w-[440px]' : 'md:w-[380px]'}`}>
       <div className="flex h-11 items-center justify-between gap-2 border-b border-line px-4">
         <div className="min-w-0">
           <h2 className="truncate text-[13px] font-medium text-fg">{view === 'graph' ? MODES[mode].label : TITLES[view]}</h2>

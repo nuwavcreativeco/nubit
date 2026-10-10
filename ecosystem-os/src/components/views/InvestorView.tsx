@@ -44,7 +44,7 @@ export function InvestorView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b border-line">
+      <div className="grid grid-cols-2 border-b border-line sm:grid-cols-4 lg:grid-cols-7">
         {[
           <Metric key="1" label="Revenue" value={money(st.revenue)} status={ps} metric="revenue" sub={`${pct(st.growth, { sign: true, digits: 1 })} growth`} />,
           <Metric key="2" label="EBITDA" value={money(st.ebitda)} status={ps} metric="ebitda" sub={`${pct(st.ebitdaMargin)} margin`} />,
@@ -56,7 +56,7 @@ export function InvestorView() {
         ].map((m, i) => <div key={i} className="border-r border-line px-5 py-3.5 last:border-r-0">{m}</div>)}
       </div>
 
-      <div className="grid grid-cols-[1.2fr_1fr]">
+      <div className="grid lg:grid-cols-[1.2fr_1fr]">
         <div className="border-r border-line">
           <div className="border-b border-line p-6">
             <div className="label mb-3 flex items-center gap-2">Investment thesis <StatusBadge status="estimated" /></div>
@@ -72,7 +72,7 @@ export function InvestorView() {
               ))}
             </ol>
           </div>
-          <div className="grid grid-cols-2">
+          <div className="grid sm:grid-cols-2">
             <div className="border-r border-line p-6">
               <div className="label mb-3">Strategic moat</div>
               <ul className="space-y-2">{moat.map((m) => <li key={m} className="text-[12.5px] text-fg-2">◆ {m}</li>)}</ul>
@@ -94,7 +94,7 @@ export function InvestorView() {
             <div className="label mb-3">Revenue mix</div>
             <MixBar format={money} items={st.active.map((v) => ({ id: v.id, label: v.v.name, value: v.revenue, color: colors[v.id]?.base ?? '#c4c9d1' }))} />
           </div>
-          <div className="grid grid-cols-2 border-b border-line">
+          <div className="grid border-b border-line sm:grid-cols-2">
             <div className="border-r border-line p-6"><Metric label="Cross-selling potential" value={money(crossSell)} status="estimated" metric="synergyRevenue" sub="incremental annual revenue" /></div>
             <div className="p-6"><Metric label="Capital requirements" value={money(capital + oppCapital)} status="estimated" sub={`${money(capital)} vertical plans + ${money(oppCapital)} top initiatives`} /></div>
           </div>

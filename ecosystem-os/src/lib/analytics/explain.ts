@@ -45,7 +45,7 @@ export const METRICS = {
   crossSell: { label: 'Cross-sell potential', kind: 'estimated', formula: 'non-buyers × adoption (affinity × 20%, 2–30%) × annual value × 60% realisation', notes: 'Annual value is capped at 4× what the buyer already spends on the source product (min $5K) — a $1.8K/yr software customer won\'t start a $78K retainer.' },
   upsell: { label: 'Upsell potential', kind: 'estimated', formula: 'customers × upgrade rate × annual price uplift' },
   potential: { label: 'Potential revenue', kind: 'estimated', formula: 'current revenue + two years of base-case organic growth + Σ identified opportunities on this node', notes: 'Risk-adjusted potential multiplies each opportunity by its confidence.' },
-  investmentReturn: { label: 'Return on $ invested', kind: 'estimated', formula: '(investment × 70% ÷ CAC) new customers × LTV × gross margin × capacity factor; capacity factor = 1 up to 85% utilization, falling linearly to 0.1 at 97%' },
+  investmentReturn: { label: 'Return on $ invested', kind: 'estimated', formula: 'new customers × LTV × gross margin, where new customers = (investment × 70% ÷ CAC) × capacity factor, capped at what the team can serve before 85% utilization (customers × max(5%, 85% ÷ utilization − 1)); capacity factor = 1 up to 85% utilization, falling linearly to 0.1 at 97%' },
 } satisfies Record<string, MetricDef>;
 
 export type MetricKey = keyof typeof METRICS;

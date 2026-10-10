@@ -108,6 +108,9 @@ export function TopBar() {
   const s = useApp();
   const a = useAnalysis();
   const base = useBaselineAnalysis();
+  const yearsRef = useRef<HTMLDivElement>(null);
+  // When the timeline scrolls (narrow screens), keep the selected year in view.
+  useEffect(() => { yearsRef.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' }); }, [s.year, s.data]);
   if (!s.data || !a || !s.scenario || !s.baseline) {
     return <header className="flex items-center border-b border-line bg-panel px-4"><Logo /></header>;
   }
@@ -128,7 +131,7 @@ export function TopBar() {
 
   return (
     <header className="flex min-w-0 items-stretch border-b border-line bg-panel">
-      <div className="flex w-[184px] shrink-0 items-center border-r border-line px-4"><Logo /></div>
+      <div className="hidden w-[184px] shrink-0 items-center border-r border-line px-4 md:flex"><Logo /></div>
 
       <div className="flex shrink-0 items-center gap-1 border-r border-line px-2">
         <Menu label={<span className="max-w-44 truncate text-fg">{s.data.parent.name}</span>}>
@@ -139,9 +142,9 @@ export function TopBar() {
       </div>
 
       {/* Timeline */}
-      <div className="flex min-w-0 shrink [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-center gap-0 overflow-x-auto border-r border-line px-2" role="group" aria-label="Year">
+      <div className="flex min-w-0 shrink [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-center gap-0 overflow-x-auto border-r border-line px-2" ref={yearsRef} role="group" aria-label="Year">
         {s.data.parent.years.map((y) => (
-          <button key={y} onClick={() => s.setYear(y)} className={`relative flex h-8 shrink-0 flex-col items-center justify-center px-2.5 ${s.year === y ? 'text-fg' : 'text-muted hover:text-fg-2'}`}>
+          <button key={y} aria-pressed={s.year === y} onClick={() => s.setYear(y)} className={`relative flex h-8 shrink-0 flex-col items-center justify-center px-2.5 ${s.year === y ? 'text-fg' : 'text-muted hover:text-fg-2'}`}>
             <span className="num text-[12px]">{y}</span>
             <span className="text-[8px] uppercase tracking-wider" style={{ color: y > cur ? 'var(--st-projected)' : y === cur ? 'var(--accent)' : 'var(--dim)' }}>{y > cur ? 'proj' : y === cur ? 'now' : 'act'}</span>
             {s.year === y && <span className="absolute inset-x-1 bottom-0 h-[2px] bg-accent" />}
@@ -150,7 +153,7 @@ export function TopBar() {
       </div>
 
       <div className="flex shrink-0 items-center border-r border-line px-1">
-        <Menu label={<span className="flex items-center gap-1.5"><span className="label !text-[9px]">Scenario</span><span className={a.scenarioActive ? 'text-accent' : 'text-fg'}>{activeScenario?.name ?? (a.scenarioActive ? 'Unsaved what-if' : 'Baseline')}</span></span>}>
+        <Menu label={<span className="flex items-center gap-1.5"><span className="label hidden !text-[9px] sm:inline">Scenario</span><span className={`max-w-28 truncate sm:max-w-none ${a.scenarioActive ? 'text-accent' : 'text-fg'}`}>{activeScenario?.name ?? (a.scenarioActive ? 'Unsaved what-if' : 'Baseline')}</span></span>}>
           {(close) => (
             <>
               <Item active={!a.scenarioActive} onClick={() => { close(); s.applySavedScenario(null); }}>Baseline</Item>
@@ -162,7 +165,7 @@ export function TopBar() {
         </Menu>
       </div>
 
-      <div className="flex min-w-[112px] flex-1 items-stretch overflow-hidden">
+      <div className="hidden min-w-[112px] flex-1 items-stretch overflow-hidden sm:flex">
         <Kpi label={`Revenue ${s.year}`} value={money(a.state.revenue)} status={st} delta={delta(a.state.revenue, base?.state.revenue)} />
         <div className="hidden 2xl:flex"><Kpi label="Growth" value={pct(a.state.growth, { sign: true, digits: 1 })} status={st} /></div>
         <Kpi label="EBITDA" value={money(a.state.ebitda)} status={st} delta={delta(a.state.ebitda, base?.state.ebitda)} />
@@ -170,9 +173,9 @@ export function TopBar() {
         <Kpi label="Est. EV" value={money(a.valuation.ev)} status="estimated" delta={delta(a.valuation.ev, base?.valuation.ev)} />
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 border-l border-line px-2">
-        <SearchBox />
-        <Menu align="right" label={<span className="flex items-center gap-1.5"><Download className="size-3.5" />Export</span>}>
+      <div className="ml-auto flex shrink-0 items-center gap-1 border-l border-line px-1 sm:ml-0 sm:px-2">
+        <div className="hidden sm:block"><SearchBox /></div>
+        <Menu align="right" label={<span className="flex items-center gap-1.5"><Download className="size-3.5" /><span className="hidden sm:inline">Export</span></span>}>
           {(close) => (
             <>
               <Item onClick={() => { close(); window.open(`/report/investor?company=${s.companyId}&year=${s.year}&scenario=${encodeURIComponent(JSON.stringify(s.scenario))}`, '_blank'); }}><FileText className="size-3.5" />Investor report (PDF)</Item>

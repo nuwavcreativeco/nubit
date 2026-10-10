@@ -61,7 +61,7 @@ export function Inspector() {
   ];
 
   return (
-    <aside className="fade-in flex w-[380px] shrink-0 flex-col border-l border-line bg-panel">
+    <aside className="fade-in absolute inset-0 z-40 flex flex-col bg-panel md:static md:z-auto md:w-[380px] md:shrink-0 md:border-l md:border-line">
       <div className="border-b border-line px-4 py-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -223,13 +223,13 @@ export function Inspector() {
           <>
             <Section title="Product">
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <Metric label="Revenue" value={money(prod.revenue)} status={ps} metric="revenue" />
+                <Metric label="Revenue" value={money(prod.revenue)} status={ps === 'actual' ? prod.p.status?.revenue ?? ps : ps} metric="revenue" />
                 <Metric label="Growth" value={pct(prod.growth, { sign: true, digits: 1 })} status={ps} metric="growth" />
-                <Metric label="Avg transaction" value={money(prod.p.atv)} status="actual" />
-                <Metric label="Gross margin" value={pct(prod.p.margin)} status="actual" metric="grossMargin" />
-                <Metric label="Customers" value={num(prod.customers)} status={ps} />
-                <Metric label="Repeat purchase" value={pct(prod.p.repeatRate)} status="actual" />
-                <Metric label="Attach rate" value={pct(prod.p.attachRate)} status="actual" sub={`of ${vName(prod.p.vertical)} customers`} />
+                <Metric label="Avg transaction" value={money(prod.p.atv)} status={fieldStatus('atv', ctx, prod.p.status)} />
+                <Metric label="Gross margin" value={pct(prod.p.margin)} status={fieldStatus('margin', ctx, prod.p.status)} metric="grossMargin" />
+                <Metric label="Customers" value={num(prod.customers)} status={prod.p.status?.customers ?? ps} />
+                <Metric label="Repeat purchase" value={pct(prod.p.repeatRate)} status={fieldStatus('repeatRate', ctx, prod.p.status)} />
+                <Metric label="Attach rate" value={pct(prod.p.attachRate)} status={fieldStatus('attachRate', ctx, prod.p.status)} sub={`of ${vName(prod.p.vertical)} customers`} />
                 <Metric label="Revenue type" value={prod.p.recurring ? 'Recurring' : 'One-time'} status="actual" />
               </div>
             </Section>

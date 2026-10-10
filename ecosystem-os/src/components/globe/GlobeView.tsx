@@ -45,7 +45,8 @@ export function GlobeView() {
   const s = useApp();
   const a = useAnalysis();
   const [rotate, setRotate] = useState(true);
-  const [hud, setHud] = useState(true);
+  // On a phone the panels would cover the globe; start with them hidden there.
+  const [hud, setHud] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
   const [labels, setLabels] = useState<'all' | 'major'>('all');
   const productCount = s.data?.products.length ?? 0;
   const [showProducts, setShowProducts] = useState(productCount <= 120);
@@ -100,7 +101,7 @@ export function GlobeView() {
 
       {/* ── HUD ───────────────────────────────────────────── */}
       {hud && <div className="pointer-events-none absolute inset-0 flex justify-between gap-4 overflow-hidden p-4 pb-24">
-        <div className="flex w-[270px] shrink-0 flex-col gap-3 overflow-y-auto">
+        <div className="flex w-full shrink-0 flex-col gap-3 overflow-y-auto sm:w-[270px]">
           <Glass className="p-4">
             <div className="label !text-[#8fb4ff]">{s.year}{a.status.isProjected ? ' · projected' : ''} · {activeScenario?.name ?? (a.scenarioActive ? 'What-if' : 'Baseline')}</div>
             <div className="mt-1 text-[20px] font-semibold tracking-wide text-white" style={{ textShadow: '0 0 18px rgba(120,170,255,0.6)' }}>{s.data.parent.name}</div>
@@ -201,7 +202,7 @@ export function GlobeView() {
             <button onClick={() => setShowProducts((p) => !p)} title="Show products" className={showProducts ? 'text-white' : 'text-muted hover:text-white'}><Boxes className="size-3.5" /></button>
             <button onClick={() => setHud((h) => !h)} title={hud ? 'Hide panels' : 'Show panels'} className={hud ? 'text-white' : 'text-muted hover:text-white'}><PanelsTopLeft className="size-3.5" /></button>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-fg-2">
+          <div className="hidden flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-fg-2 sm:flex">
             {st.active.map((v) => <span key={v.id} className="flex items-center gap-1"><span className="size-2 rounded-full" style={{ background: scene.colors[v.id]?.base, boxShadow: `0 0 6px ${scene.colors[v.id]?.base}` }} />{v.v.name}</span>)}
             <span className="h-3 w-px bg-white/10" />
             {edgeKinds.map((k) => <span key={k} className="flex items-center gap-1"><span className="h-[2px] w-3" style={{ background: EDGE_STYLES[k].color, boxShadow: `0 0 4px ${EDGE_STYLES[k].color}` }} />{EDGE_STYLES[k].label}</span>)}

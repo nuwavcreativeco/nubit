@@ -17,6 +17,13 @@ const K = 1_000;
 //          marketing for Music but not World.
 //   Plan — scale the agency with marketing campaigns; once cash flow is 7 figures, bring marketing
 //          back to Music, productize and scale.
+//
+// Market sizes (all EST) are the Puget Sound market NuWav can reach today, not global industry totals:
+//   Music  TAM $30M  regional spend by independent artists on recording, video, beats and mixing;
+//          SAM $3M   artists within reach of one studio and its network.
+//   Creative Co TAM $450M  ~150K local small businesses × ~$3K/yr outsourced marketing;
+//          SAM $20M  service businesses that buy CRM/automation systems or video retainers.
+//   World  TAM $5M   streetwear bought by the local music scene; SAM $0.5M  NuWav's own artist/fan community.
 const EST = 'estimated' as const;
 
 export const nuwav: CompanyData = {
@@ -50,7 +57,7 @@ export const nuwav: CompanyData = {
       revenue: { 2024: 80 * K, 2025: 80 * K, 2026: 80 * K }, projectedGrowth: 0.03,
       grossMargin: 0.6, ebitdaMargin: 0.5, contributionMargin: 0.5,
       customers: 200, employees: 0, recurringShare: 0, cac: 40, ltv: 325, retention: 0.2,
-      tam: 1_000_000_000, sam: 15_000_000, strategicImportance: 8, growthPotential: 6,
+      tam: 30_000_000, sam: 3_000_000, strategicImportance: 8, growthPotential: 6,
       marketingSpend: 2 * K, requiredInvestment: 25 * K, b2b: true,
       ops: { leadsPerMonth: 25, leadsNeeded: 25, utilization: 0.6, keyPersonRisk: 0.9, topCustomerShare: 0.03 },
       risks: ['Revenue flat for three years', 'Owner delivers most sessions and videos', 'Only 20% of artists come back'],
@@ -63,7 +70,7 @@ export const nuwav: CompanyData = {
       revenue: { 2026: 23 * K, 2027: 96 * K }, projectedGrowth: 0.5,
       grossMargin: 0.75, ebitdaMargin: 0.5, contributionMargin: 0.35, // scaling means hiring: new revenue earns less than today's lean margin
       customers: 8, employees: 0, recurringShare: 1, cac: 300, ltv: 27 * K, retention: 0.85,
-      tam: 50_000_000_000, sam: 60_000_000, strategicImportance: 10, growthPotential: 10,
+      tam: 450_000_000, sam: 20_000_000, strategicImportance: 10, growthPotential: 10,
       marketingSpend: 3 * K, requiredInvestment: 15 * K, b2b: true,
       ops: { leadsPerMonth: 10, leadsNeeded: 30, utilization: 0.7, keyPersonRisk: 0.85, topCustomerShare: 0.42 },
       risks: ['One client is 42% of MRR', 'Owner sells and manages every account', 'Single developer builds every website'],
@@ -75,7 +82,7 @@ export const nuwav: CompanyData = {
       revenue: { 2024: 1 * K, 2025: 1 * K, 2026: 1 * K }, projectedGrowth: 0,
       grossMargin: 0.5, ebitdaMargin: 0.4, contributionMargin: 0.45,
       customers: 25, employees: 0, recurringShare: 0, cac: 20, ltv: 30, retention: 0.2,
-      tam: 25_000_000_000, sam: 5_000_000, strategicImportance: 4, growthPotential: 5,
+      tam: 5_000_000, sam: 500_000, strategicImportance: 4, growthPotential: 5,
       marketingSpend: 0, requiredInvestment: 3 * K, b2b: false,
       ops: { leadsPerMonth: 50, leadsNeeded: 100, utilization: 0.1, keyPersonRisk: 0.9, topCustomerShare: 0.1 },
       risks: ['No marketing support today', 'Sales depend on the studio\'s artists'],

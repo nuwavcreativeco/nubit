@@ -27,7 +27,7 @@ export function OverviewView() {
         <h1 className="mt-1 text-[20px] font-medium text-fg">{s.data.parent.name}</h1>
         <p className="text-[12px] text-muted">{s.data.parent.tagline}. Ten questions an owner should be able to answer about the business — each answer is computed from the graph.</p>
       </div>
-      <div className="grid grid-cols-6 border-b border-line">
+      <div className="grid grid-cols-2 border-b border-line sm:grid-cols-3 lg:grid-cols-6">
         {[
           <Metric key="r" label="Revenue" value={money(st.revenue)} status={ps} metric="revenue" sub={`${pct(st.growth, { sign: true, digits: 1 })} YoY`} />,
           <Metric key="e" label="EBITDA" value={money(st.ebitda)} status={ps} metric="ebitda" sub={`${pct(st.ebitdaMargin)} margin`} />,
@@ -38,8 +38,8 @@ export function OverviewView() {
         ].map((m, i) => <div key={i} className="border-r border-line px-5 py-3.5 last:border-r-0">{m}</div>)}
       </div>
 
-      <div className="grid grid-cols-[1fr_340px] gap-0">
-        <div className="grid grid-cols-2 border-r border-line">
+      <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
+        <div className="grid border-line md:grid-cols-2 lg:border-r">
           {answers.map((q, i) => (
             <div key={q.id} className={`border-b border-line p-5 ${i % 2 === 0 ? 'border-r' : ''}`}>
               <div className="flex items-center justify-between gap-2">

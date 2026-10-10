@@ -38,11 +38,12 @@ export function AppShell() {
 
   return (
     <ReactFlowProvider>
-      <div className="grid h-screen grid-rows-[44px_1fr] bg-bg">
+      <div className="grid h-screen grid-cols-[minmax(0,1fr)] grid-rows-[44px_1fr] bg-bg">
         <TopBar />
-        <div className="grid min-h-0 grid-cols-[184px_1fr]">
+        {/* Below md the nav becomes a tab strip above the content. */}
+        <div className="flex min-h-0 flex-col md:grid md:grid-cols-[184px_1fr]">
           <NavRail />
-          <main className="relative flex min-h-0 min-w-0 flex-col">
+          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col">
             {!data ? (
               <div className="grid flex-1 place-items-center text-[12px] text-muted">{error ? <span className="text-neg">{error}</span> : loading ? 'Loading company data…' : 'No data'}</div>
             ) : view === 'globe' ? (
@@ -54,7 +55,7 @@ export function AppShell() {
               <>
                 <div className="flex min-h-0 flex-1">
                   <ViewPanel />
-                  <div className="relative min-w-0 flex-1">
+                  <div className="relative min-w-0 flex-1 overflow-hidden">
                     <GraphCanvas />
                     <Legend />
                   </div>
