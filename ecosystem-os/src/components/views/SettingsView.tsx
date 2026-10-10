@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { Download, FileJson, RotateCcw, Upload, Check, Clock } from 'lucide-react';
+import { Download, FileJson, RotateCcw, Upload, Check, Clock, ClipboardPen } from 'lucide-react';
 import { useApp } from '@/store/app';
 import { api } from '@/lib/data/client';
 import { CONNECTORS } from '@/lib/data/connectors/registry';
@@ -78,6 +78,11 @@ export function SettingsView() {
               <Btn variant="outline" onClick={() => window.open('/api/schema', '_blank')}><FileJson className="size-3.5" />JSON Schema</Btn>
               <Btn variant="danger" onClick={async () => { if (!confirm('Reset this company to its built-in dataset? Imported changes will be lost.')) return; const d = await api.resetCompany(s.companyId!); s.replaceCompany(d); setMsg({ ok: true, text: 'Reset to built-in dataset' }); }}><RotateCcw className="size-3.5" />Reset to built-in</Btn>
             </div>
+          </Panel>
+
+          <Panel title="Update figures by hand">
+            <p className="mb-2 text-[12px] text-muted">Replace the model&apos;s estimates with your real numbers — no file needed.</p>
+            <Btn variant="outline" onClick={() => s.setView('inputs')}><ClipboardPen className="size-3.5" />Open “Your numbers”</Btn>
           </Panel>
 
           <Panel title="Import">

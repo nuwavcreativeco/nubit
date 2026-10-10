@@ -43,7 +43,7 @@ export function OperationsPanel() {
           </button>
         ))}
       </Section>
-      <Section title="Delivery capacity by vertical" right={<StatusBadge status="actual" />}>
+      <Section title="Delivery capacity by vertical" right={<StatusBadge status={st.active.some((v) => v.v.status?.utilization === 'estimated') ? 'estimated' : 'actual'} />}>
         <BarList format={(v) => pct(v)} max={1} items={[...st.active].filter((v) => !v.isNew).sort((x, y) => y.v.ops.utilization - x.v.ops.utilization).map((v) => ({ id: v.id, label: v.v.name, value: v.v.ops.utilization, color: v.v.ops.utilization > 0.85 ? 'var(--serious)' : 'var(--fg-2)', onClick: () => s.select(v.id, { focus: true }) }))} />
       </Section>
       <Section title="Operational bottlenecks">

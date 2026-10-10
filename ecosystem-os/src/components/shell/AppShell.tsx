@@ -12,6 +12,7 @@ import { ViewPanel } from '@/components/panels/ViewPanel';
 import { OverviewView } from '@/components/views/OverviewView';
 import { InvestorView } from '@/components/views/InvestorView';
 import { SettingsView } from '@/components/views/SettingsView';
+import { DataInputsView } from '@/components/views/DataInputsView';
 import { GlobeView } from '@/components/globe/GlobeView';
 
 export function AppShell() {
@@ -67,6 +68,8 @@ export function AppShell() {
               <OverviewView />
             ) : view === 'investor' ? (
               <InvestorView />
+            ) : view === 'inputs' ? (
+              <DataInputsView />
             ) : (
               <SettingsView />
             )}

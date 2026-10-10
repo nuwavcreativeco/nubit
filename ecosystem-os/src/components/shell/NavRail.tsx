@@ -1,7 +1,9 @@
 'use client';
-import { Globe2, Bot, Briefcase, Coins, Gauge, GitFork, LayoutDashboard, Lightbulb, Network, Settings, ShieldAlert, SlidersHorizontal, Users, Server } from 'lucide-react';
+import { Globe2, Bot, ClipboardPen, Briefcase, Coins, Gauge, GitFork, LayoutDashboard, Lightbulb, Network, Settings, ShieldAlert, SlidersHorizontal, Users, Server } from 'lucide-react';
 import { useApp, type ViewId } from '@/store/app';
 import { useAnalysis } from '@/store/useAnalysis';
+import { useMemo } from 'react';
+import { inputFields } from '@/lib/domain/inputs';
 
 const NAV: { id: ViewId; label: string; icon: typeof Network; group?: string }[] = [
   { id: 'globe', label: 'Globe', icon: Globe2, group: 'Command' },
@@ -16,7 +18,8 @@ const NAV: { id: ViewId; label: string; icon: typeof Network; group?: string }[]
   { id: 'risk', label: 'Risk', icon: ShieldAlert },
   { id: 'investor', label: 'Investor View', icon: Briefcase, group: 'Reporting' },
   { id: 'analyst', label: 'AI Analyst', icon: Bot },
-  { id: 'settings', label: 'Settings & Data', icon: Settings, group: 'System' },
+  { id: 'inputs', label: 'Your numbers', icon: ClipboardPen, group: 'System' },
+  { id: 'settings', label: 'Settings & Data', icon: Settings },
 ];
 
 export function NavRail() {
@@ -25,6 +28,8 @@ export function NavRail() {
   const system = useApp((s) => s.system);
   const a = useAnalysis();
   const critical = a?.bottlenecks.filter((b) => b.severity >= 0.75).length ?? 0;
+  const data = useApp((s) => s.data);
+  const estimates = useMemo(() => (data ? inputFields(data).filter((f) => f.status !== 'actual').length : 0), [data]);
 
   return (
     <nav className="flex min-h-0 shrink-0 flex-col border-b border-line bg-panel md:border-b-0 md:border-r">
@@ -41,6 +46,7 @@ export function NavRail() {
               <span className="flex-1">{n.label}</span>
               {n.id === 'risk' && critical > 0 && <span className="num text-[10px]" style={{ color: 'var(--critical)' }}>{critical}</span>}
               {n.id === 'opportunities' && a && <span className="num text-[10px] text-muted">{a.opportunities.length}</span>}
+              {n.id === 'inputs' && estimates > 0 && <span className="num text-[10px]" style={{ color: 'var(--st-estimated)' }} title={`${estimates} figures are still estimates`}>{estimates}</span>}
             </button>
           </div>
         ))}

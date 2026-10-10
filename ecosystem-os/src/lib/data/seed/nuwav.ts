@@ -33,7 +33,7 @@ export const nuwav: CompanyData = {
     currency: 'USD',
     asOf: '2026-10-08',
     source: 'interview',
-    description: 'Owner interview, Oct 2026. Reported figures are marked ACT; inferred ones EST — correct them in Settings → Import or by re-interview.',
+    description: 'Owner interview, Oct 2026. Reported figures are marked ACT; inferred ones EST — correct them on the Your numbers page.',
   },
   parent: {
     id: 'parent',
@@ -61,7 +61,7 @@ export const nuwav: CompanyData = {
       marketingSpend: 2 * K, requiredInvestment: 25 * K, b2b: true,
       ops: { leadsPerMonth: 25, leadsNeeded: 25, utilization: 0.6, keyPersonRisk: 0.9, topCustomerShare: 0.03 },
       risks: ['Revenue flat for three years', 'Owner delivers most sessions and videos', 'Only 20% of artists come back'],
-      status: { grossMargin: EST, cac: EST, ltv: EST, tam: EST, sam: EST, marketingSpend: EST, requiredInvestment: EST },
+      status: { leadsPerMonth: EST, leadsNeeded: EST, utilization: EST, grossMargin: EST, cac: EST, ltv: EST, tam: EST, sam: EST, marketingSpend: EST, requiredInvestment: EST },
     },
     {
       id: 'creative', name: 'NuWav Creative Co', hue: 255, icon: 'Megaphone', launchYear: 2026,
@@ -74,7 +74,7 @@ export const nuwav: CompanyData = {
       marketingSpend: 3 * K, requiredInvestment: 15 * K, b2b: true,
       ops: { leadsPerMonth: 10, leadsNeeded: 30, utilization: 0.7, keyPersonRisk: 0.85, topCustomerShare: 0.42 },
       risks: ['One client is 42% of MRR', 'Owner sells and manages every account', 'Single developer builds every website'],
-      status: { revenue: EST, grossMargin: EST, contributionMargin: EST, cac: EST, ltv: EST, retention: EST, tam: EST, sam: EST, marketingSpend: EST, requiredInvestment: EST },
+      status: { leadsPerMonth: EST, leadsNeeded: EST, utilization: EST, revenue: EST, grossMargin: EST, contributionMargin: EST, cac: EST, ltv: EST, retention: EST, tam: EST, sam: EST, marketingSpend: EST, requiredInvestment: EST },
     },
     {
       id: 'world', name: 'NuWav World', hue: 150, icon: 'Shirt',
@@ -86,7 +86,7 @@ export const nuwav: CompanyData = {
       marketingSpend: 0, requiredInvestment: 3 * K, b2b: false,
       ops: { leadsPerMonth: 50, leadsNeeded: 100, utilization: 0.1, keyPersonRisk: 0.9, topCustomerShare: 0.1 },
       risks: ['No marketing support today', 'Sales depend on the studio\'s artists'],
-      status: { grossMargin: EST, ebitdaMargin: EST, customers: EST, cac: EST, ltv: EST, retention: EST, tam: EST, sam: EST, requiredInvestment: EST },
+      status: { leadsPerMonth: EST, leadsNeeded: EST, utilization: EST, grossMargin: EST, ebitdaMargin: EST, customers: EST, cac: EST, ltv: EST, retention: EST, tam: EST, sam: EST, requiredInvestment: EST },
     },
   ],
 

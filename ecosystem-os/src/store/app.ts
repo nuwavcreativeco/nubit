@@ -6,7 +6,7 @@ import { baselineScenario } from '@/lib/analytics/model';
 import { MODES, type EdgeKind, type FlowMetric, type GraphMode } from '@/lib/graph/theme';
 import type { Point } from '@/lib/graph/layout';
 
-export type ViewId = 'globe' | 'overview' | 'graph' | 'revenue' | 'customers' | 'synergies' | 'opportunities' | 'scenarios' | 'operations' | 'risk' | 'investor' | 'analyst' | 'settings';
+export type ViewId = 'globe' | 'overview' | 'graph' | 'revenue' | 'customers' | 'synergies' | 'opportunities' | 'scenarios' | 'operations' | 'risk' | 'investor' | 'analyst' | 'inputs' | 'settings';
 
 /** Graph views and the mode each one opens in. Non-graph views are full-page dashboards. */
 export const VIEW_MODE: Partial<Record<ViewId, GraphMode>> = {
