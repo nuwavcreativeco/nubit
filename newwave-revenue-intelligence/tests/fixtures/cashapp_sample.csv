@@ -1,0 +1,10 @@
+Transaction ID,Date,Transaction Type,Currency,Amount,Fee,Net Amount,Asset Type,Asset Price,Asset Amount,Status,Notes,Name of sender/receiver,Account
+TEST-CA-1,2024-01-05 14:03:22 PST,P2P,USD,$150.00,$0,$150.00,,,,COMPLETE,mix for single,$testartista,Cash App
+TEST-CA-2,2024-01-20 10:00:00 PST,P2P,USD,$75.00,-$2.06,$72.94,,,,COMPLETE,studio session,$testartistb,Cash App
+TEST-CA-3,2024-02-02 09:00:00 PST,P2P,USD,-$40.00,$0,-$40.00,,,,COMPLETE,refund,$testartista,Cash App
+TEST-CA-4,2024-02-10 18:00:00 PST,Cash Out,USD,-$100.00,$0,-$100.00,,,,COMPLETE,,,Visa Debit 0000
+TEST-CA-5,2024-02-11 12:00:00 PST,P2P,USD,$60.00,$0,$60.00,,,,PAYMENT REFUNDED,beat,$testartistc,Cash App
+TEST-CA-6,2024-02-12 12:00:00 PST,P2P,USD,$90.00,$0,$90.00,,,,FAILED,beat,$testartistc,Cash App
+TEST-CA-7,not a date,P2P,USD,$20.00,$0,$20.00,,,,COMPLETE,?,$testartistd,Cash App
+TEST-CA-8,2024-02-15 12:00:00 PST,P2P,USD,abc,$0,$0,,,,COMPLETE,bad amount,$testartistd,Cash App
+TEST-CA-9,2024-02-16 12:00:00 PST,Bitcoin Buy,USD,-$25.00,$0,-$25.00,BTC,,,COMPLETE,,,Cash App

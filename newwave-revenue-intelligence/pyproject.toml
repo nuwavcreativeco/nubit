@@ -1,0 +1,11 @@
+[project]
+name = "newwave-revenue-intelligence"
+version = "0.1.0"
+description = "Local-first historical revenue intelligence for New Wave Music"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["error::DeprecationWarning:newwave.*"]

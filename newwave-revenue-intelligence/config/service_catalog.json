@@ -1,0 +1,17 @@
+{
+  "_comment": "Editable service categories. Aliases/keywords drive keyword detection in messages. A keyword hit means a service was DISCUSSED, never that it was sold. Edit here or in the dashboard (Settings > Service catalog).",
+  "services": [
+    {"code": "recording_session", "name": "Recording sessions", "aliases": ["studio session", "recording"], "keywords": ["session", "studio time", "record", "recording", "booth", "hourly", "per hour"]},
+    {"code": "beat_lease", "name": "Beat licensing", "aliases": ["lease", "beat lease", "non-exclusive"], "keywords": ["lease", "leasing", "license", "licence", "non exclusive", "non-exclusive", "mp3 lease", "wav lease"]},
+    {"code": "exclusive_beat", "name": "Exclusive beat sales", "aliases": ["exclusive", "exclusive rights"], "keywords": ["exclusive", "exclusive rights", "buy out", "buyout", "full rights"]},
+    {"code": "mixing", "name": "Mixing", "aliases": ["mix"], "keywords": ["mix", "mixing", "mixdown", "mixed"]},
+    {"code": "mastering", "name": "Mastering", "aliases": ["master"], "keywords": ["master", "mastering", "mastered"]},
+    {"code": "music_production", "name": "Music production", "aliases": ["production", "custom beat"], "keywords": ["produce", "production", "custom beat", "make a beat", "instrumental"]},
+    {"code": "music_video", "name": "Music videos", "aliases": ["video shoot"], "keywords": ["music video", "video shoot", "videographer", "shoot a video"]},
+    {"code": "social_content", "name": "Social media content", "aliases": ["content", "reels"], "keywords": ["reel", "reels", "tiktok", "content", "promo video", "snippet"]},
+    {"code": "artist_development", "name": "Artist development", "aliases": ["development", "coaching"], "keywords": ["artist development", "coaching", "branding", "rollout", "vocal coaching"]},
+    {"code": "consultation", "name": "Consultation", "aliases": ["consult"], "keywords": ["consult", "consultation", "advice call", "strategy call"]},
+    {"code": "other", "name": "Other services", "aliases": [], "keywords": []},
+    {"code": "unclassified", "name": "Unknown / unclassified", "aliases": [], "keywords": []}
+  ]
+}
