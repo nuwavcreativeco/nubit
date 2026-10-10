@@ -241,6 +241,9 @@ Metric definitions are in **`docs/METRICS.md`**.
 .venv/bin/python -m pytest          # 122 tests, synthetic fixtures only, isolated temp workspaces
 ```
 
+CI: `.github/workflows/newwave-revenue-intelligence.yml` (repo root) runs the suite on Python 3.11 and 3.13
+for pull requests and pushes to `main` that touch this folder. AI calls are disabled in CI.
+
 Layout:
 
 ```
