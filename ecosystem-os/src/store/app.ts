@@ -162,7 +162,7 @@ export const useApp = create<AppState>((set, get) => ({
     const baseline = baselineScenario(data);
     set({
       data, baseline, scenario: baseline, activeScenarioId: null, year: data.parent.currentYear,
-      expanded: new Set(), verticalFilter: new Set(), selectedId: null, hoverId: null, journeyId: null, positions: {},
+      expanded: new Set(), verticalFilter: new Set(), selectedId: null, hoverId: null, journeyId: null, positions: {}, search: '',
       fitRequest: { ids: null, at: Date.now() },
     });
   },

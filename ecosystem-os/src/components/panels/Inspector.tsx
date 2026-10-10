@@ -105,7 +105,7 @@ export function Inspector() {
               <Section title="Profit & loss">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <Metric label="Revenue" value={money(vs.revenue)} status={ps} metric="revenue" delta={a.scenarioActive && vs.baseRevenue ? { text: pct(vs.revenue / vs.baseRevenue - 1, { digits: 1 }), good: vs.revenue >= vs.baseRevenue } : null} />
-                  <Metric label="Growth" value={pct(vs.growth, { sign: true, digits: 1 })} status={ps} metric="growth" inputs={[['This year', money(vs.revenue)], ['Prior year', money(vs.prevRevenue)]]} />
+                  <Metric label="Growth" value={vs.isNew || !vs.prevRevenue ? 'new' : pct(vs.growth, { sign: true, digits: 1 })} sub={vs.isNew || !vs.prevRevenue ? 'launched this year' : undefined} status={ps} metric="growth" inputs={[['This year', money(vs.revenue)], ['Prior year', money(vs.prevRevenue)]]} />
                   <Metric label="Gross margin" value={pct(v.grossMargin)} status={fieldStatus('grossMargin', ctx, o)} metric="grossMargin" />
                   <Metric label="EBITDA" value={money(vs.ebitda)} status={ps} metric="ebitda" sub={`${pct(vs.ebitdaMargin)} margin`} />
                   <Metric label="Contribution margin" value={pct(v.contributionMargin)} status={fieldStatus('contributionMargin', ctx, o)} metric="contributionMargin" />
@@ -115,7 +115,7 @@ export function Inspector() {
               <Section title="Unit economics">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <Metric label="Revenue / customer" value={money(vs.arpc)} status={ps} metric="revenuePerCustomer" inputs={[['Revenue', money(vs.revenue)], ['Customers', num(vs.customers)]]} />
-                  <Metric label="Revenue / employee" value={money(vs.revenue / Math.max(1, vs.employees))} status={ps} metric="revenuePerEmployee" inputs={[['Employees', String(vs.employees)]]} />
+                  <Metric label="Revenue / employee" value={vs.employees > 0 ? money(vs.revenue / vs.employees) : '—'} sub={vs.employees > 0 ? undefined : 'no staff on payroll'} status={ps} metric="revenuePerEmployee" inputs={[['Employees', String(vs.employees)]]} />
                   <Metric label="CAC" value={money(v.cac)} status={fieldStatus('cac', ctx, o)} metric="cac" />
                   <Metric label="LTV" value={money(v.ltv)} status={fieldStatus('ltv', ctx, o)} metric="ltv" />
                   <Metric label="LTV : CAC" value={`${(v.ltv / Math.max(1, v.cac)).toFixed(1)}×`} status="estimated" metric="ltvCac" />
@@ -275,12 +275,12 @@ export function Inspector() {
           <>
             <Section title={infra ? 'Infrastructure' : 'Shared team'}>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <Metric label="Annual cost" value={money(infra?.annualCost ?? fn!.annualCost)} status="actual" />
+                <Metric label="Annual cost" value={money(infra?.annualCost ?? fn!.annualCost)} status={(infra ?? fn)!.status?.annualCost ?? 'actual'} />
                 {infra && <Metric label="Tech debt" value={pct(infra.techDebt)} status="estimated" />}
-                {fn && <Metric label="FTE" value={fn.fte} status="actual" />}
-                {fn && <Metric label="Utilization" value={pct(fn.utilization)} status="actual" />}
+                {fn && <Metric label="FTE" value={fn.fte} status={fn.status?.fte ?? 'actual'} />}
+                {fn && <Metric label="Utilization" value={pct(fn.utilization)} status={fn.status?.utilization ?? 'actual'} />}
                 <Metric label="Dependent verticals" value={(infra?.dependents ?? fn!.serves).length} status="actual" />
-                <Metric label="Cost per dependent" value={money((infra?.annualCost ?? fn!.annualCost) / Math.max(1, (infra?.dependents ?? fn!.serves).length))} status="actual" />
+                <Metric label="Cost per dependent" value={money((infra?.annualCost ?? fn!.annualCost) / Math.max(1, (infra?.dependents ?? fn!.serves).length))} status={(infra ?? fn)!.status?.annualCost ?? 'actual'} />
               </div>
             </Section>
             <Section title="Who depends on it">

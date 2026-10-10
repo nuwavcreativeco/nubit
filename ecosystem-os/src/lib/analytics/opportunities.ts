@@ -45,6 +45,9 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
   const out: Omit<Opportunity, 'score'>[] = [];
   // Materiality thresholds scale with the company, so a $100K business and a $100M group both see their real options.
   const material = (share: number, floor: number) => Math.max(floor, state.revenue * share);
+  // Default launch costs are sized for a ~$20M group; a smaller company runs the same play leaner.
+  const sizeK = Math.min(1, Math.sqrt(state.revenue / 20_000_000));
+  const cost = (usd: number) => Math.max(500, Math.round((usd * sizeK) / 100) * 100);
   const vs = Object.fromEntries(state.verticals.map((v) => [v.id, v]));
   const infraName = Object.fromEntries(data.infra.map((i) => [i.id, i.name]));
   const vName = (id: string) => vs[id]?.v.name ?? id;
@@ -58,7 +61,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
       description: `${s.untappedCustomers.toLocaleString()} existing customers could adopt the sister vertical; raising cross-sell from ${pct(s.pair.currentCrossSellRate)} to ${pct(s.pair.targetCrossSellRate)}.`,
       revenue: s.incrementalRevenue, profit: s.incrementalRevenue * gm * 0.8,
       confidence: clamp(0.45 + s.score / 250), difficulty: clamp(0.25 + (1 - s.pair.sharedTech) * 0.35),
-      investment: 40_000 + s.untappedCustomers * 40, months: 4, impact: Math.round(s.score / 10),
+      investment: cost(40_000) + s.untappedCustomers * 40, months: 4, impact: Math.round(s.score / 10),
       dependencies: s.pair.sharedInfra.map((id) => infraName[id]).filter(Boolean),
       nodeIds: [s.a, s.b],
     });
@@ -73,7 +76,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
       name: `Upsell ${p.name} → ${p.upsell.to}`,
       description: `${pct(p.upsell.rate)} of ${ps.customers.toLocaleString()} customers moving up a tier at +${money(p.upsell.priceUplift)}/yr.`,
       revenue, profit: revenue * Math.min(0.95, p.margin + 0.1), confidence: 0.65, difficulty: 0.3,
-      investment: 25_000, months: 3, impact: 5, dependencies: [vName(p.vertical) + ' delivery capacity'], nodeIds: [p.id],
+      investment: cost(25_000), months: 3, impact: 5, dependencies: [vName(p.vertical) + ' delivery capacity'], nodeIds: [p.id],
     });
   }
 
@@ -83,7 +86,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
       description: `Package ${b.members.map((m) => m.name).join(' + ')} at ${money(b.price)}/yr (15% bundle discount).`,
       revenue: b.incrementalRevenue, profit: b.incrementalMargin,
       confidence: clamp(b.avgAffinity * 0.8), difficulty: clamp(0.3 + b.verticals.length * 0.1),
-      investment: 50_000 + b.members.length * 10_000, months: 4, impact: Math.round(b.strategicValue / 10),
+      investment: cost(50_000 + b.members.length * 10_000), months: 4, impact: Math.round(b.strategicValue / 10),
       dependencies: b.verticals.map(vName), nodeIds: b.members.map((m) => m.id),
     });
   }
@@ -113,7 +116,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
       name: `Introduce ${best.v.v.name} to ${seg.s.name}`,
       description: `${seg.s.name} buy from ${seg.verticals.length} vertical${seg.verticals.length === 1 ? '' : 's'} today but never from ${best.v.v.name}.`,
       revenue: best.value, profit: best.value * best.v.v.grossMargin * 0.7,
-      confidence: 0.5, difficulty: 0.4, investment: 30_000, months: 5, impact: 5,
+      confidence: 0.5, difficulty: 0.4, investment: cost(30_000), months: 5, impact: 5,
       dependencies: ['Shared CRM view of the customer'], nodeIds: [seg.id, best.v.id],
     });
   }
@@ -126,7 +129,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
       id: `sub-${p.id}`, type: 'subscription', name: `Turn ${p.name} into a subscription`,
       description: `${pct(p.repeatRate)} of buyers already repurchase; a membership locks that in and lifts retained spend ~25%.`,
       revenue, profit: revenue * p.margin, confidence: 0.55, difficulty: 0.35,
-      investment: 40_000, months: 4, impact: 6, dependencies: ['Payments & Billing'], nodeIds: [p.id],
+      investment: cost(40_000), months: 4, impact: 6, dependencies: ['Payments & Billing'], nodeIds: [p.id],
     });
   }
 
@@ -148,7 +151,7 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
         id: `dm-${i.id}`, type: 'data_monetization', name: 'Local market benchmark product',
         description: `${(i.dataRecords / 1e6).toFixed(1)}M anonymized records across verticals could power paid benchmarks and intelligence.`,
         revenue, profit: revenue * 0.75, confidence: 0.4, difficulty: 0.7,
-        investment: 150_000, months: 9, impact: 7, dependencies: [i.name, 'Privacy review'], nodeIds: [i.id],
+        investment: cost(150_000), months: 9, impact: 7, dependencies: [i.name, 'Privacy review'], nodeIds: [i.id],
       });
     }
   }
@@ -187,6 +190,6 @@ export function findOpportunities(data: CompanyData, state: CompanyState, synerg
   }
 
   return out
-    .map((o) => ({ ...o, score: ((o.profit + o.revenue * 0.3) * o.confidence * (0.5 + o.impact / 10)) / Math.sqrt(o.investment + 25_000) }))
+    .map((o) => ({ ...o, score: ((o.profit + o.revenue * 0.3) * o.confidence * (0.5 + o.impact / 10)) / Math.sqrt(o.investment + cost(25_000)) }))
     .sort((a, b) => b.score - a.score);
 }

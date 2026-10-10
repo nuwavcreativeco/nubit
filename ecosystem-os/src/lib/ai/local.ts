@@ -1,5 +1,7 @@
 import type { AnalystEvent } from './analyst';
 import { runTool, type ToolContext } from './tools';
+import { computeState } from '@/lib/analytics/model';
+import { SYNERGY_FACTORS } from '@/lib/analytics/synergy';
 
 /**
  * Deterministic analyst used when no Anthropic credentials are configured. It routes the question
@@ -43,8 +45,10 @@ export function* runLocalAnalyst(question: string, ctx: ToolContext): Generator<
     yield say(`- Customers: ${b.customers.toLocaleString()} → ${s.customers.toLocaleString()} [PROJECTED]\n- EBITDA margin: ${p(b.ebitda_margin)} → ${p(s.ebitda_margin)} [PROJECTED]\n- Enterprise value: ${$(b.enterprise_value)} → ${$(s.enterprise_value)} [ESTIMATED]\n`);
     const last = r.PROJECTED_by_year[r.PROJECTED_by_year.length - 1];
     yield say(`- ${last.year} revenue under this scenario: ${$(last.revenue)} [PROJECTED]\n\nAssumption: incremental volume earns each vertical's contribution margin; price increases lose 35% of their volume effect to elasticity.`);
-  } else if (/invest|allocate|put .* into|capital/.test(q) || (amount >= 10_000 && /where|which/.test(q))) {
-    const amt = amount >= 10_000 ? amount : 500_000;
+  } else if (/invest|allocate|put .* into|capital/.test(q) || (amount >= 1_000 && /where|which/.test(q))) {
+    // No amount given: default to a quarter of this year's revenue, so the answer fits the company's size.
+    const revenue = computeState(ctx.data, ctx.year, ctx.scenario, ctx.baseline).revenue;
+    const amt = amount >= 1_000 ? amount : Math.max(5_000, Math.round((revenue * 0.25) / 5_000) * 5_000);
     const r = (yield* call('allocate_investment', { amount: amt })).ESTIMATED;
     const [top, second] = r.ranking;
     yield say(`An extra ${$(amt)} [USER INPUT] creates the most value in [[node:${top.vertical}|${top.name}]]: about ${$(top.valueCreated)} of lifetime gross profit [ESTIMATED] and ${$(top.firstYearRevenue)} first-year revenue [ESTIMATED].\n\n`);
@@ -65,7 +69,7 @@ export function* runLocalAnalyst(question: string, ctx: ToolContext): Generator<
       const target = vertical ? list.filter((s) => s.a === vertical.id || s.b === vertical.id) : list;
       const low = target[target.length - 1];
       const weak = Object.entries(low.factors as Record<string, number>).sort((a, b) => a[1] - b[1]).slice(0, 3);
-      yield say(`${low.pair} scores ${low.score}/100 [ESTIMATED]. The score is held down by its weakest factors: ${weak.map(([k, v]) => `${k} (${p(v)})`).join(', ')} [ESTIMATED].\n\n- Shared customers: ${low.shared_customers} [ACTUAL]\n- Current cross-sell rate: ${p(low.current_cross_sell_rate)} [ACTUAL]\n\nRaising cross-sell or sharing infrastructure lifts the score fastest.`);
+      yield say(`${low.pair} scores ${low.score}/100 [ESTIMATED]. The score is held down by its weakest factors: ${weak.map(([k, v]) => `${(SYNERGY_FACTORS.find((f) => f.key === k)?.label ?? k).toLowerCase()} (${p(v)})`).join(', ')} [ESTIMATED].\n\n- Shared customers: ${low.shared_customers} [ACTUAL]\n- Current cross-sell rate: ${p(low.current_cross_sell_rate)} [ACTUAL]\n\nRaising cross-sell or sharing infrastructure lifts the score fastest.`);
     } else {
       const top = list[0];
       yield say(`[[node:${top.a}|${top.pair.split(' ↔ ')[0]}]] and [[node:${top.b}|${top.pair.split(' ↔ ')[1]}]] should work most closely together — synergy ${top.score}/100 [ESTIMATED] with ${$(top.incremental_revenue)} incremental revenue [ESTIMATED] and ${$(top.cost_savings)} cost savings [ESTIMATED].\n\n`);

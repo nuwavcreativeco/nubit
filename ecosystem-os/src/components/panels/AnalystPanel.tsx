@@ -2,20 +2,30 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowUp, Bot, Loader2, Wrench, User } from 'lucide-react';
 import { useApp, type ChatMessage } from '@/store/app';
+import { useAnalysis } from '@/store/useAnalysis';
+import { money } from '@/lib/analytics/format';
 import { StatusBadge } from '@/components/ui/primitives';
 import type { DataStatus } from '@/lib/domain/types';
 
-const SUGGESTIONS = [
-  'What is our biggest revenue opportunity?',
-  'Which verticals should we combine?',
-  'Where are we overdependent?',
-  'Which customers should we cross-sell?',
-  'What happens if customer growth increases by 20%?',
-  'Which vertical should receive another $500K of investment?',
-  'Which acquisition would make the most sense?',
-  'Why is our synergy score low for Real Estate?',
-  'What would happen if we removed Media?',
-];
+/** Starter questions, filled in with this company's own units and a sensible investment size. */
+function suggestionsFor(a: ReturnType<typeof useAnalysis>): string[] {
+  const active = a ? [...a.state.active].sort((x, y) => x.revenue - y.revenue) : [];
+  const smallest = active[0]?.v.name;
+  const weakest = a ? [...a.synergies].sort((x, y) => x.score - y.score)[0] : null;
+  const weakName = weakest ? a!.state.verticals.find((v) => v.id === weakest.b)?.v.name : null;
+  const amount = a ? money(Math.max(5_000, Math.round((a.state.revenue * 0.25) / 5_000) * 5_000)) : null;
+  return [
+    'What is our biggest revenue opportunity?',
+    'Which verticals should we combine?',
+    'Where are we overdependent?',
+    'Which customers should we cross-sell?',
+    'What happens if customer growth increases by 20%?',
+    amount && `Which vertical should receive another ${amount} of investment?`,
+    'Which acquisition would make the most sense?',
+    weakName && `Why is our synergy score low for ${weakName}?`,
+    smallest && active.length > 1 && `What would happen if we removed ${smallest}?`,
+  ].filter(Boolean) as string[];
+}
 
 const TAG: Record<string, DataStatus> = { ACTUAL: 'actual', ESTIMATED: 'estimated', PROJECTED: 'projected', 'USER INPUT': 'user', 'AI PROJECTION': 'ai' };
 
@@ -60,6 +70,7 @@ const TOOL_LABEL: Record<string, string> = {
 
 export function AnalystPanel() {
   const s = useApp();
+  const analysis = useAnalysis();
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -126,7 +137,7 @@ export function AnalystPanel() {
         {s.chat.length === 0 && (
           <div className="space-y-1.5">
             <div className="label mb-2">Try asking</div>
-            {SUGGESTIONS.map((q) => <button key={q} onClick={() => ask(q)} className="block w-full border border-line px-3 py-2 text-left text-[12px] text-fg-2 hover:border-line-2 hover:text-fg">{q}</button>)}
+            {suggestionsFor(analysis).map((q) => <button key={q} onClick={() => ask(q)} className="block w-full border border-line px-3 py-2 text-left text-[12px] text-fg-2 hover:border-line-2 hover:text-fg">{q}</button>)}
           </div>
         )}
         {s.chat.map((m) => (

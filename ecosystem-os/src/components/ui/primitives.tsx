@@ -28,6 +28,8 @@ export function Metric({
   inputs?: [string, string][]; size?: 'sm' | 'md' | 'lg';
 }) {
   const [open, setOpen] = useState(false);
+  // Open leftwards when a right-aligned popover would run off the screen.
+  const [alignRight, setAlignRight] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -38,7 +40,7 @@ export function Metric({
   const def = metric ? METRICS[metric] : null;
   return (
     <div ref={ref} className="relative min-w-0">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="group block w-full min-w-0 text-left" aria-expanded={open}>
+      <button type="button" onClick={() => { const r = ref.current?.getBoundingClientRect(); setAlignRight(!!r && r.left + 296 > window.innerWidth); setOpen((o) => !o); }} className="group block w-full min-w-0 text-left" aria-expanded={open}>
         <div className="flex items-center gap-1.5">
           <span className="label truncate">{label}</span>
           <StatusBadge status={status} />
@@ -53,7 +55,7 @@ export function Metric({
         )}
       </button>
       {open && (
-        <div className="fade-in absolute left-0 top-full z-50 mt-1 w-72 border border-line-2 bg-panel-3 p-3 shadow-2xl shadow-black/60">
+        <div className={`fade-in absolute top-full z-50 mt-1 w-72 ${alignRight ? 'right-0' : 'left-0'} border border-line-2 bg-panel-3 p-3 shadow-2xl shadow-black/60`}>
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="text-[12px] font-medium text-fg">{def?.label ?? label}</div>
             <button onClick={() => setOpen(false)} aria-label="Close"><X className="size-3 text-muted" /></button>

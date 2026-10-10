@@ -32,10 +32,18 @@ export interface Synergy {
   topDrivers: string[];
 }
 
+/** Fallback when the company has no shared-team cost data. */
 const AVG_FTE_COST = 85_000;
+
+/** What one shared FTE actually costs this company, from its shared teams (an unpaid founder costs $0). */
+function costPerFte(data: CompanyData) {
+  const fte = sum(data.functions.map((f) => f.fte));
+  return fte > 0 ? sum(data.functions.map((f) => f.annualCost)) / fte : AVG_FTE_COST;
+}
 
 export function computeSynergies(data: CompanyData, state: CompanyState): Synergy[] {
   const vs = Object.fromEntries(state.verticals.map((v) => [v.id, v]));
+  const fteCost = costPerFte(data);
   const infraCost = Object.fromEntries(data.infra.map((i) => [i.id, i.annualCost]));
   const pairs = activePairs(data, state.year);
 
@@ -50,7 +58,7 @@ export function computeSynergies(data: CompanyData, state: CompanyState): Synerg
     const sharedInfraCost = sum(p.sharedInfra.map((id) => infraCost[id] ?? 0));
     const costSavings =
       sharedInfraCost * 0.2 +
-      p.sharedEmployeesFTE * AVG_FTE_COST * 0.25 +
+      p.sharedEmployeesFTE * fteCost * 0.25 +
       p.sharedMarketing * Math.min(A.v.marketingSpend, B.v.marketingSpend) * 0.2;
     return { p, A, B, incrementalRevenue, costSavings, untapped: untappedAB + untappedBA };
   });

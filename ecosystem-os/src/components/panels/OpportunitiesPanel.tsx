@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { Crosshair, Save, Trash2 } from 'lucide-react';
 import { useApp } from '@/store/app';
-import { useAcquisitionOverlay, useAnalysis } from '@/store/useAnalysis';
+import { useAcquisitionOverlay, useAnalysis, useBaselineAnalysis } from '@/store/useAnalysis';
 import { OPPORTUNITY_LABEL, difficultyLabel, type OpportunityType } from '@/lib/analytics/opportunities';
 import { ALL_CAPABILITIES, INFRA_CATEGORIES } from '@/lib/analytics/acquisition';
 import { money, months, pct, sum } from '@/lib/analytics/format';
@@ -158,10 +158,18 @@ function Overlap() {
 
 const EMPTY: AcquisitionInput = { name: 'Cascade Web Studio', price: 2_400_000, revenue: 1_800_000, ebitda: 340_000, customers: 220, employees: 16, growth: 0.18, services: ['acquisition', 'brand', 'platform'], segments: ['seg-local'], geography: ['Seattle', 'Portland'], infra: ['web', 'crm'] };
 
+/** The example target, shrunk for companies smaller than ~$20M so it is a plausible first deal. */
+function exampleTarget(revenue: number): AcquisitionInput {
+  const k = Math.min(1, Math.sqrt(Math.max(0, revenue) / 20_000_000));
+  const r = (x: number, to: number) => Math.max(to, Math.round((x * k) / to) * to);
+  return { ...EMPTY, price: r(EMPTY.price, 5_000), revenue: r(EMPTY.revenue, 5_000), ebitda: r(EMPTY.ebitda, 1_000), customers: r(EMPTY.customers, 1), employees: r(EMPTY.employees, 1) };
+}
+
 function Acquisition() {
   const s = useApp();
   const overlay = useAcquisitionOverlay();
-  const [form, setForm] = useState<AcquisitionInput>(() => s.acquisitionDraft ?? { ...EMPTY, segments: s.data?.segments.slice(0, 1).map((g) => g.id) ?? [] });
+  const base = useBaselineAnalysis();
+  const [form, setForm] = useState<AcquisitionInput>(() => s.acquisitionDraft ?? { ...exampleTarget(base?.state.revenue ?? 0), segments: s.data?.segments.slice(0, 1).map((g) => g.id) ?? [] });
   const [geo, setGeo] = useState(form.geography.join(', '));
   const set = <K extends keyof AcquisitionInput>(k: K, v: AcquisitionInput[K]) => setForm((f) => ({ ...f, [k]: v }));
   const toggleIn = (k: 'services' | 'segments' | 'infra', v: string) => set(k, form[k].includes(v) ? form[k].filter((x) => x !== v) : [...form[k], v]);
@@ -239,7 +247,7 @@ function Acquisition() {
               <div className="truncate text-[12px] text-fg-2 hover:text-fg">{t.name}</div>
               <div className="num text-[10px] text-muted">{money(t.price)} · {money(t.revenue)} rev · {money(t.ebitda)} EBITDA</div>
             </button>
-            <button onClick={() => t.id && s.deleteAcquisition(t.id)} aria-label="Delete target" className="text-dim hover:text-neg"><Trash2 className="size-3.5" /></button>
+            <button onClick={() => t.id && confirm(`Delete the acquisition target “${t.name}”? This cannot be undone.`) && s.deleteAcquisition(t.id)} aria-label="Delete target" className="text-dim hover:text-neg"><Trash2 className="size-3.5" /></button>
           </div>
         )) : <p className="text-[12px] text-muted">Saved targets appear here and can be compared by the AI analyst.</p>}
       </Section>

@@ -32,11 +32,15 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
     if (vs.isNew) continue;
     const { v } = vs;
     const o = v.ops;
+    // A problem in a vertical that is 1% of revenue is not as severe as the same problem in the core business.
+    const share = state.revenue > 0 ? vs.revenue / state.revenue : 0;
+    const materiality = 0.35 + 0.65 * clamp(share / 0.3);
+    const sev = (x: number) => clamp(x) * materiality;
 
     if (o.leadsNeeded > 0 && o.leadsPerMonth < o.leadsNeeded) {
       const gap = 1 - o.leadsPerMonth / o.leadsNeeded;
       out.push({
-        id: `sales-${v.id}`, nodeId: v.id, type: 'sales', severity: clamp(gap * 2.5),
+        id: `sales-${v.id}`, nodeId: v.id, type: 'sales', severity: sev(gap * 2.5),
         title: `${v.name}: insufficient lead flow`,
         detail: `${o.leadsPerMonth.toLocaleString()} leads/mo against ${o.leadsNeeded.toLocaleString()} needed to hit plan (${pct(gap)} short).`,
         fix: 'Route sister-vertical audiences and referrals into this pipeline; add a dedicated demand-gen budget.',
@@ -44,7 +48,7 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
     }
     if (o.utilization > 0.85) {
       out.push({
-        id: `ops-${v.id}`, nodeId: v.id, type: 'operations', severity: clamp((o.utilization - 0.85) / 0.12),
+        id: `ops-${v.id}`, nodeId: v.id, type: 'operations', severity: sev((o.utilization - 0.85) / 0.12),
         title: `${v.name}: delivery capacity at ${pct(o.utilization)}`,
         detail: 'Teams above ~85% utilization stop taking on new work well; growth stalls or quality slips.',
         fix: 'Hire ahead of demand, productize repeatable work, or shift delivery to automation.',
@@ -52,7 +56,7 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
     }
     if (o.keyPersonRisk >= 0.5) {
       out.push({
-        id: `people-${v.id}`, nodeId: v.id, type: 'personnel', severity: clamp((o.keyPersonRisk - 0.4) / 0.5),
+        id: `people-${v.id}`, nodeId: v.id, type: 'personnel', severity: sev((o.keyPersonRisk - 0.4) / 0.5),
         title: `${v.name}: key-person dependency`,
         detail: `Revenue or delivery depends heavily on one or two people (risk ${pct(o.keyPersonRisk)}).`,
         fix: 'Document playbooks, build a second-in-command, and tie key people to retention incentives.',
@@ -60,7 +64,7 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
     }
     if (o.topCustomerShare >= 0.15) {
       out.push({
-        id: `cust-${v.id}`, nodeId: v.id, type: 'customer', severity: clamp((o.topCustomerShare - 0.1) / 0.25),
+        id: `cust-${v.id}`, nodeId: v.id, type: 'customer', severity: sev((o.topCustomerShare - 0.1) / 0.25),
         title: `${v.name}: top customer is ${pct(o.topCustomerShare)} of revenue`,
         detail: 'Losing that one account would materially dent this vertical.',
         fix: 'Diversify with cross-sold accounts from sister verticals; lock in multi-year terms.',
@@ -82,9 +86,12 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
   }
 
   for (const f of data.functions) {
+    // Same materiality idea as verticals: weigh by the share of group revenue this team serves.
+    const served = state.revenue > 0 ? state.active.filter((v) => f.serves.includes(v.id)).reduce((t, v) => t + v.revenue, 0) / state.revenue : 0;
+    const fsev = (x: number) => clamp(x) * (0.35 + 0.65 * clamp(served / 0.3));
     if (f.utilization > 0.85) {
       out.push({
-        id: `fn-${f.id}`, nodeId: f.id, type: 'operations', severity: clamp((f.utilization - 0.85) / 0.12),
+        id: `fn-${f.id}`, nodeId: f.id, type: 'operations', severity: fsev((f.utilization - 0.85) / 0.12),
         title: `${f.name}: shared team over-stretched`,
         detail: `${pct(f.utilization)} utilized while serving ${f.serves.length} verticals.`,
         fix: 'Add headcount or define a priority queue between verticals.',
@@ -92,7 +99,7 @@ export function detectBottlenecks(data: CompanyData, state: CompanyState): Bottl
     }
     if (f.keyPersonRisk >= 0.6) {
       out.push({
-        id: `fnp-${f.id}`, nodeId: f.id, type: 'personnel', severity: clamp((f.keyPersonRisk - 0.4) / 0.5),
+        id: `fnp-${f.id}`, nodeId: f.id, type: 'personnel', severity: fsev((f.keyPersonRisk - 0.4) / 0.5),
         title: `${f.name}: single point of knowledge`,
         detail: 'Critical processes live with one person.',
         fix: 'Cross-train and document; consider an outsourced backup.',

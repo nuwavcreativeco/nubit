@@ -21,6 +21,24 @@ const LEVERS: Lever[] = [
   { key: 'costEfficiency', label: 'Opex efficiency', min: 0, max: 0.2, step: 0.01, presets: [0.05, 0.1], fmt: (v) => pct(v) },
 ];
 
+/** Round to 1, 2 or 5 × a power of ten. */
+const nice = (x: number) => {
+  const p = 10 ** Math.floor(Math.log10(Math.max(1, x)));
+  return [1, 2, 5, 10].map((m) => m * p).reduce((best, c) => (Math.abs(c - x) < Math.abs(best - x) ? c : best));
+};
+
+/** Fit the default lever ranges to this company, so a $100K business and a $20M one both get usable sliders. */
+function leversFor(revenue: number, baseline: ScenarioParams): Lever[] {
+  return LEVERS.map((l) => {
+    if (l.key === 'retention') return { ...l, min: Math.max(0.05, Math.min(l.min, Math.floor(baseline.retention * 20) / 20 - 0.1)) };
+    if (l.key === 'newVertical') {
+      const max = Math.min(l.max, nice(revenue));
+      return { ...l, max, step: max / 40, presets: [max / 8, max / 4, max / 2] };
+    }
+    return l;
+  });
+}
+
 export function ScenarioPanel() {
   const s = useApp();
   const a = useAnalysis();
@@ -49,7 +67,7 @@ export function ScenarioPanel() {
       )}
       <Section title="Assumptions" right={<button onClick={s.resetScenario} className="flex items-center gap-1 text-[11px] text-muted hover:text-fg"><RotateCcw className="size-3" />Baseline</button>}>
         <div className="space-y-4">
-          {LEVERS.map((l) => (
+          {leversFor(bst.revenue, bl).map((l) => (
             <div key={l.key}>
               <Slider label={l.label} value={sc[l.key]} min={l.min} max={l.max} step={l.step} onChange={(v) => s.setScenario({ [l.key]: v })} format={l.fmt} baseline={bl[l.key]} />
               <div className="mt-1 flex gap-1">
@@ -130,7 +148,7 @@ export function ScenarioPanel() {
           {s.savedScenarios.map((x) => (
             <div key={x.id} className="flex items-center justify-between border-t border-line py-1.5 first:border-t-0">
               <button onClick={() => s.applySavedScenario(x)} className={`text-left text-[12px] ${x.id === s.activeScenarioId ? 'text-accent' : 'text-fg-2 hover:text-fg'}`}>{x.name}</button>
-              <button onClick={() => s.deleteScenario(x.id)} aria-label="Delete scenario" className="text-dim hover:text-neg"><Trash2 className="size-3.5" /></button>
+              <button onClick={() => confirm(`Delete the scenario “${x.name}”? This cannot be undone.`) && s.deleteScenario(x.id)} aria-label="Delete scenario" className="text-dim hover:text-neg"><Trash2 className="size-3.5" /></button>
             </div>
           ))}
         </div>

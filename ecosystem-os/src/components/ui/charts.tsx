@@ -134,11 +134,16 @@ export function Heatmap({ labels, values, format, onCell, colorFor }: { labels: 
   const all = labels.flatMap((a) => labels.map((b) => (a.id === b.id ? null : values(a.id, b.id)))).filter((v): v is number => v !== null);
   const max = Math.max(...all, 1e-9);
   const seq = colorFor ?? ((v: number) => `color-mix(in oklch, #3987e5 ${Math.round(12 + (v / max) * 88)}%, var(--panel-2))`);
+  // Column headers are narrow: drop leading words every label shares ("NuWav Music", "NuWav World" → "Music", "World").
+  const words = labels.map((l) => l.label.split(' '));
+  let common = 0;
+  while (labels.length > 1 && words.every((w) => w.length > common + 1 && w[common] === words[0][common])) common++;
+  const short = (i: number) => words[i].slice(common).join(' ');
   return (
     <div className="relative" onMouseLeave={() => setTip(null)}>
       <div className="grid gap-[2px]" style={{ gridTemplateColumns: `88px repeat(${labels.length}, minmax(0, 1fr))` }}>
         <div />
-        {labels.map((l) => <div key={l.id} className="truncate pb-1 text-center text-[9px] text-muted" title={l.label}>{l.label.slice(0, 4)}</div>)}
+        {labels.map((l, i) => <div key={l.id} className="truncate pb-1 text-center text-[9px] text-muted" title={l.label}>{short(i)}</div>)}
         {labels.map((row) => (
           <div key={row.id} className="contents">
             <div className="flex items-center gap-1.5 truncate pr-1 text-[11px] text-fg-2">{row.color && <span className="size-1.5 shrink-0" style={{ background: row.color }} />}{row.label}</div>

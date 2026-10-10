@@ -34,7 +34,7 @@ export function ViewPanel() {
     <aside className={`flex shrink-0 flex-col border-r border-line bg-panel transition-[width] ${wide ? 'w-[620px]' : view === 'analyst' ? 'w-[440px]' : 'w-[380px]'}`}>
       <div className="flex h-11 items-center justify-between gap-2 border-b border-line px-4">
         <div className="min-w-0">
-          <h2 className="truncate text-[13px] font-medium text-fg">{TITLES[view]}</h2>
+          <h2 className="truncate text-[13px] font-medium text-fg">{view === 'graph' ? MODES[mode].label : TITLES[view]}</h2>
           <p className="truncate text-[10.5px] text-muted">{MODES[mode].question}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1 text-muted">

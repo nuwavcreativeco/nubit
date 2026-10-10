@@ -36,7 +36,7 @@ export const METRICS = {
     notes: 'Overlap = shared ÷ smaller customer base × 2 (capped). Revenue potential and efficiency are normalised against the best pair (square root).',
   },
   synergyRevenue: { label: 'Synergy revenue', kind: 'estimated', formula: 'Σ direction: eligible customers × (target − current cross-sell rate) × ARPC of the other vertical × 35% starter ticket + 30% of existing referral flow' },
-  synergyCost: { label: 'Synergy cost savings', kind: 'estimated', formula: 'shared infra cost × 20% + shared FTE × $85K × 25% + shared-marketing intensity × min(marketing spend) × 20%' },
+  synergyCost: { label: 'Synergy cost savings', kind: 'estimated', formula: 'shared infra cost × 20% + shared FTE × your cost per shared-team FTE ($85K if unknown) × 25% + shared-marketing intensity × min(marketing spend) × 20%' },
   health: { label: 'Business health', kind: 'estimated', formula: 'Weighted average of 11 component scores, each mapped linearly from a "bad" to a "good" threshold. Click the components for each threshold.' },
   opportunityScore: { label: 'Opportunity score', kind: 'estimated', formula: '(profit + 30% × revenue) × confidence × (0.5 + impact ÷ 10) ÷ √(investment + $25K)' },
   riskScore: { label: 'Risk score', kind: 'estimated', formula: '100 × (1 − Π(1 − severity)) across the bottlenecks attached to the node' },
