@@ -1,0 +1,3 @@
+entry_id,date,amount,type,method,payer_name,payer_phone,payer_instagram,payer_email,service,memo,receipt_ref
+CASH-1,2024-01-12,120.00,payment_received,cash,Test Cash Client,555-010-0150,@testcashclient,,recording_session,2hr session,R-1
+CASH-2,2024-01-30,35.00,expense,cash,Test Cable Shop,,,,,XLR cables,R-2

@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Private data — never commit financial records, conversations, databases or exports
+data/
+demo_workspace/
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+exports/
+reports/
+logs/
+backups/
+*.zip
+# real export files dropped next to the code by mistake
+*cash_app*.csv
+*venmo*.csv
+*statement*.csv
+!tests/fixtures/*.csv
